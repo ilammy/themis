@@ -38,7 +38,7 @@ DerivedData/
 .idea/
 build
 .gradle
-
+.vs/
 
 # python rules
 # Byte-compiled / optimized / DLL files

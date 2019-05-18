@@ -1,0 +1,326 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files\ed25519">
+      <UniqueIdentifier>{6a27f3c4-c0bb-43dd-9b62-2bdcbed03e6b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\ed25519">
+      <UniqueIdentifier>{6fa70e30-d079-45b0-a7cd-8430ea6142ee}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\soter\ed25519\ge_utils.h">
+      <Filter>Header Files\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\ed25519\base.h">
+      <Filter>Header Files\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\ed25519\base2.h">
+      <Filter>Header Files\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\ed25519\d.h">
+      <Filter>Header Files\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\ed25519\d2.h">
+      <Filter>Header Files\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\ed25519\fe.h">
+      <Filter>Header Files\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\ed25519\ge.h">
+      <Filter>Header Files\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\ed25519\ge_add.h">
+      <Filter>Header Files\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\ed25519\ge_madd.h">
+      <Filter>Header Files\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\ed25519\ge_msub.h">
+      <Filter>Header Files\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\ed25519\ge_p2_dbl.h">
+      <Filter>Header Files\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\ed25519\ge_sub.h">
+      <Filter>Header Files\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\ed25519\api.h">
+      <Filter>Header Files\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\ed25519\sc.h">
+      <Filter>Header Files\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\ed25519\pow225521.h">
+      <Filter>Header Files\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\ed25519\pow22523.h">
+      <Filter>Header Files\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\ed25519\sqrtm1.h">
+      <Filter>Header Files\ed25519</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\portable_endian.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\soter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\soter_api.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\soter_asym_cipher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\soter_asym_ka.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\soter_asym_sign.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\soter_container.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\soter_crc32.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\soter_ec_key.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\openssl\soter_ecdsa_common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\openssl\soter_engine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\soter_error.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\soter_hash.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\soter_hmac.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\soter_kdf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\soter_rand.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\openssl\soter_rsa_common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\soter_rsa_key.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\soter_rsa_key_pair_gen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\soter_sign_ecdsa.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\soter_sign_rsa.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\soter_sym.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\soter\soter_t.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\soter\ed25519\fe_0.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\fe_1.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\fe_add.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\fe_cmov.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\fe_copy.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\fe_frombytes.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\fe_invert.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\fe_isnegative.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\fe_isnonzero.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\fe_mul.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\fe_neg.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\fe_pow22523.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\fe_sq.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\fe_sq2.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\fe_sub.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\fe_tobytes.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\ge_add.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\ge_cmp.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\ge_double_scalarmult.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\ge_frombytes.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\ge_frombytes_no_negate.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\ge_madd.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\ge_msub.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\ge_p1p1_to_p2.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\ge_p1p1_to_p3.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\ge_p2_0.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\ge_p2_dbl.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\ge_p2_to_p3.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\ge_p3_0.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\ge_p3_dbl.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\ge_p3_sub.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\ge_p3_to_cached.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\ge_p3_to_p2.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\ge_p3_tobytes.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\ge_precomp_0.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\ge_scalarmult.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\ge_scalarmult_base.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\ge_sub.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\ge_tobytes.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\gen_rand_32.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\sc_muladd.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\ed25519\sc_reduce.c">
+      <Filter>Source Files\ed25519</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\openssl\soter_asym_cipher.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\openssl\soter_asym_ka.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\soter_container.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\soter_crc32.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\openssl\soter_ec_key.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\openssl\soter_ecdsa_common.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\openssl\soter_hash.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\soter_hmac.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\soter_kdf.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\openssl\soter_rand.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\openssl\soter_rsa_common.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\openssl\soter_rsa_key.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\openssl\soter_rsa_key_pair_gen.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\soter_sign.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\openssl\soter_sign_ecdsa.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\openssl\soter_sign_rsa.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\openssl\soter_sym.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\openssl\soter_verify_ecdsa.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\soter\openssl\soter_verify_rsa.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
