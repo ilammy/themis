@@ -117,8 +117,6 @@ soter_status_t soter_engine_specific_to_rsa_priv_key(const soter_engine_specific
     soter_status_t res;
     int rsa_mod_size;
     size_t output_length;
-    uint32_t* pub_exp;
-    unsigned char* curr_bn = (unsigned char*)(key + 1);
 
     if (!key_length) {
         return SOTER_INVALID_PARAMETER;
@@ -146,60 +144,53 @@ soter_status_t soter_engine_specific_to_rsa_priv_key(const soter_engine_specific
         goto err;
     }
 
-    pub_exp = (uint32_t*)(curr_bn + ((rsa_mod_size * 4) + (rsa_mod_size / 2)));
     if (BN_is_word(rsa->e, RSA_F4)) {
-        *pub_exp = htobe32(RSA_F4);
+        soter_rsa_priv_key_set_pub_exp(key, rsa_mod_size, RSA_F4);
     } else if (BN_is_word(rsa->e, RSA_3)) {
-        *pub_exp = htobe32(RSA_3);
+        soter_rsa_priv_key_set_pub_exp(key, rsa_mod_size, RSA_3);
     } else {
         res = SOTER_INVALID_PARAMETER;
         goto err;
     }
 
     /* Private exponent */
-    res = bignum_to_bytes(rsa->d, curr_bn, rsa_mod_size);
+    res = bignum_to_bytes(rsa->d, soter_rsa_priv_key_priv_exp(key, rsa_mod_size), rsa_mod_size);
     if (SOTER_SUCCESS != res) {
         goto err;
     }
-    curr_bn += rsa_mod_size;
 
     /* p */
-    res = bignum_to_bytes(rsa->p, curr_bn, rsa_mod_size / 2);
+    res = bignum_to_bytes(rsa->p, soter_rsa_priv_key_p(key, rsa_mod_size), rsa_mod_size / 2);
     if (SOTER_SUCCESS != res) {
         goto err;
     }
-    curr_bn += rsa_mod_size / 2;
 
     /* q */
-    res = bignum_to_bytes(rsa->q, curr_bn, rsa_mod_size / 2);
+    res = bignum_to_bytes(rsa->q, soter_rsa_priv_key_q(key, rsa_mod_size), rsa_mod_size / 2);
     if (SOTER_SUCCESS != res) {
         goto err;
     }
-    curr_bn += rsa_mod_size / 2;
 
     /* dp */
-    res = bignum_to_bytes(rsa->dmp1, curr_bn, rsa_mod_size / 2);
+    res = bignum_to_bytes(rsa->dmp1, soter_rsa_priv_key_dp(key, rsa_mod_size), rsa_mod_size / 2);
     if (SOTER_SUCCESS != res) {
         goto err;
     }
-    curr_bn += rsa_mod_size / 2;
 
     /* dq */
-    res = bignum_to_bytes(rsa->dmq1, curr_bn, rsa_mod_size / 2);
+    res = bignum_to_bytes(rsa->dmq1, soter_rsa_priv_key_dq(key, rsa_mod_size), rsa_mod_size / 2);
     if (SOTER_SUCCESS != res) {
         goto err;
     }
-    curr_bn += rsa_mod_size / 2;
 
     /* qp */
-    res = bignum_to_bytes(rsa->iqmp, curr_bn, rsa_mod_size / 2);
+    res = bignum_to_bytes(rsa->iqmp, soter_rsa_priv_key_qp(key, rsa_mod_size), rsa_mod_size / 2);
     if (SOTER_SUCCESS != res) {
         goto err;
     }
-    curr_bn += rsa_mod_size / 2;
 
     /* modulus */
-    res = bignum_to_bytes(rsa->n, curr_bn, rsa_mod_size);
+    res = bignum_to_bytes(rsa->n, soter_rsa_priv_key_mod(key, rsa_mod_size), rsa_mod_size);
     if (SOTER_SUCCESS != res) {
         goto err;
     }
@@ -318,10 +309,9 @@ soter_status_t soter_rsa_priv_key_to_engine_specific(const soter_container_hdr_t
                                                      soter_engine_specific_rsa_key_t** engine_key)
 {
     int rsa_mod_size;
+    uint32_t pub_exp;
     RSA* rsa;
     EVP_PKEY* pkey = (EVP_PKEY*)(*engine_key);
-    const uint32_t* pub_exp;
-    const unsigned char* curr_bn = (const unsigned char*)(key + 1);
 
     if (key_length != be32toh(key->size)) {
         return SOTER_INVALID_PARAMETER;
@@ -357,9 +347,9 @@ soter_status_t soter_rsa_priv_key_to_engine_specific(const soter_container_hdr_t
         return SOTER_INVALID_PARAMETER;
     }
 
-    pub_exp = (const uint32_t*)(curr_bn + ((rsa_mod_size * 4) + (rsa_mod_size / 2)));
+    pub_exp = soter_rsa_priv_key_get_pub_exp(key, rsa_mod_size);
     ;
-    switch (be32toh(*pub_exp)) {
+    switch (pub_exp) {
     case RSA_3:
     case RSA_F4:
         break;
@@ -378,7 +368,7 @@ soter_status_t soter_rsa_priv_key_to_engine_specific(const soter_container_hdr_t
         return SOTER_NO_MEMORY;
     }
 
-    if (!BN_set_word(rsa->e, be32toh(*pub_exp))) {
+    if (!BN_set_word(rsa->e, pub_exp)) {
         RSA_free(rsa);
         return SOTER_FAIL;
     }
@@ -390,11 +380,10 @@ soter_status_t soter_rsa_priv_key_to_engine_specific(const soter_container_hdr_t
         return SOTER_NO_MEMORY;
     }
 
-    if (!BN_bin2bn(curr_bn, rsa_mod_size, rsa->d)) {
+    if (!BN_bin2bn(soter_rsa_priv_key_const_priv_exp(key, rsa_mod_size), rsa_mod_size, rsa->d)) {
         RSA_free(rsa);
         return SOTER_FAIL;
     }
-    curr_bn += rsa_mod_size;
 
     /* p */
     rsa->p = BN_new();
@@ -403,11 +392,10 @@ soter_status_t soter_rsa_priv_key_to_engine_specific(const soter_container_hdr_t
         return SOTER_NO_MEMORY;
     }
 
-    if (!BN_bin2bn(curr_bn, rsa_mod_size / 2, rsa->p)) {
+    if (!BN_bin2bn(soter_rsa_priv_key_const_p(key, rsa_mod_size), rsa_mod_size / 2, rsa->p)) {
         RSA_free(rsa);
         return SOTER_FAIL;
     }
-    curr_bn += rsa_mod_size / 2;
 
     /* q */
     rsa->q = BN_new();
@@ -416,11 +404,10 @@ soter_status_t soter_rsa_priv_key_to_engine_specific(const soter_container_hdr_t
         return SOTER_NO_MEMORY;
     }
 
-    if (!BN_bin2bn(curr_bn, rsa_mod_size / 2, rsa->q)) {
+    if (!BN_bin2bn(soter_rsa_priv_key_const_q(key, rsa_mod_size), rsa_mod_size / 2, rsa->q)) {
         RSA_free(rsa);
         return SOTER_FAIL;
     }
-    curr_bn += rsa_mod_size / 2;
 
     /* dp */
     rsa->dmp1 = BN_new();
@@ -429,11 +416,10 @@ soter_status_t soter_rsa_priv_key_to_engine_specific(const soter_container_hdr_t
         return SOTER_NO_MEMORY;
     }
 
-    if (!BN_bin2bn(curr_bn, rsa_mod_size / 2, rsa->dmp1)) {
+    if (!BN_bin2bn(soter_rsa_priv_key_const_dp(key, rsa_mod_size), rsa_mod_size / 2, rsa->dmp1)) {
         RSA_free(rsa);
         return SOTER_FAIL;
     }
-    curr_bn += rsa_mod_size / 2;
 
     /* dq */
     rsa->dmq1 = BN_new();
@@ -442,11 +428,10 @@ soter_status_t soter_rsa_priv_key_to_engine_specific(const soter_container_hdr_t
         return SOTER_NO_MEMORY;
     }
 
-    if (!BN_bin2bn(curr_bn, rsa_mod_size / 2, rsa->dmq1)) {
+    if (!BN_bin2bn(soter_rsa_priv_key_const_dq(key, rsa_mod_size), rsa_mod_size / 2, rsa->dmq1)) {
         RSA_free(rsa);
         return SOTER_FAIL;
     }
-    curr_bn += rsa_mod_size / 2;
 
     /* qp */
     rsa->iqmp = BN_new();
@@ -455,11 +440,10 @@ soter_status_t soter_rsa_priv_key_to_engine_specific(const soter_container_hdr_t
         return SOTER_NO_MEMORY;
     }
 
-    if (!BN_bin2bn(curr_bn, rsa_mod_size / 2, rsa->iqmp)) {
+    if (!BN_bin2bn(soter_rsa_priv_key_const_qp(key, rsa_mod_size), rsa_mod_size / 2, rsa->iqmp)) {
         RSA_free(rsa);
         return SOTER_FAIL;
     }
-    curr_bn += rsa_mod_size / 2;
 
     /* modulus */
     rsa->n = BN_new();
@@ -468,7 +452,7 @@ soter_status_t soter_rsa_priv_key_to_engine_specific(const soter_container_hdr_t
         return SOTER_NO_MEMORY;
     }
 
-    if (!BN_bin2bn(curr_bn, rsa_mod_size, rsa->n)) {
+    if (!BN_bin2bn(soter_rsa_priv_key_const_mod(key, rsa_mod_size), rsa_mod_size, rsa->n)) {
         RSA_free(rsa);
         return SOTER_FAIL;
     }
