@@ -54,7 +54,6 @@ soter_status_t soter_engine_specific_to_rsa_pub_key(const soter_engine_specific_
     soter_status_t res;
     int rsa_mod_size;
     size_t output_length;
-    uint32_t* pub_exp;
 
     if (!key_length) {
         return SOTER_INVALID_PARAMETER;
@@ -82,17 +81,16 @@ soter_status_t soter_engine_specific_to_rsa_pub_key(const soter_engine_specific_
         goto err;
     }
 
-    pub_exp = (uint32_t*)((unsigned char*)(key + 1) + rsa_mod_size);
     if (BN_is_word(rsa->e, RSA_F4)) {
-        *pub_exp = htobe32(RSA_F4);
+        soter_rsa_pub_key_set_pub_exp(key, rsa_mod_size, RSA_F4);
     } else if (BN_is_word(rsa->e, RSA_3)) {
-        *pub_exp = htobe32(RSA_3);
+        soter_rsa_pub_key_set_pub_exp(key, rsa_mod_size, RSA_3);
     } else {
         res = SOTER_INVALID_PARAMETER;
         goto err;
     }
 
-    res = bignum_to_bytes(rsa->n, (unsigned char*)(key + 1), rsa_mod_size);
+    res = bignum_to_bytes(rsa->n, soter_rsa_pub_key_mod(key, rsa_mod_size), rsa_mod_size);
     if (SOTER_SUCCESS != res) {
         goto err;
     }
@@ -232,9 +230,9 @@ soter_status_t soter_rsa_pub_key_to_engine_specific(const soter_container_hdr_t*
                                                     soter_engine_specific_rsa_key_t** engine_key)
 {
     int rsa_mod_size;
+    uint32_t pub_exp;
     RSA* rsa;
     EVP_PKEY* pkey = (EVP_PKEY*)(*engine_key);
-    const uint32_t* pub_exp;
 
     if (key_length != be32toh(key->size)) {
         return SOTER_INVALID_PARAMETER;
@@ -270,8 +268,8 @@ soter_status_t soter_rsa_pub_key_to_engine_specific(const soter_container_hdr_t*
         return SOTER_INVALID_PARAMETER;
     }
 
-    pub_exp = (const uint32_t*)((unsigned char*)(key + 1) + rsa_mod_size);
-    switch (be32toh(*pub_exp)) {
+    pub_exp = soter_rsa_pub_key_get_pub_exp(key, rsa_mod_size);
+    switch (pub_exp) {
     case RSA_3:
     case RSA_F4:
         break;
@@ -290,7 +288,7 @@ soter_status_t soter_rsa_pub_key_to_engine_specific(const soter_container_hdr_t*
         return SOTER_NO_MEMORY;
     }
 
-    if (!BN_set_word(rsa->e, be32toh(*pub_exp))) {
+    if (!BN_set_word(rsa->e, pub_exp)) {
         RSA_free(rsa);
         return SOTER_FAIL;
     }
@@ -301,7 +299,7 @@ soter_status_t soter_rsa_pub_key_to_engine_specific(const soter_container_hdr_t*
         return SOTER_NO_MEMORY;
     }
 
-    if (!BN_bin2bn((const unsigned char*)(key + 1), rsa_mod_size, rsa->n)) {
+    if (!BN_bin2bn(soter_rsa_pub_key_const_mod(key, rsa_mod_size), rsa_mod_size, rsa->n)) {
         RSA_free(rsa);
         return SOTER_FAIL;
     }
