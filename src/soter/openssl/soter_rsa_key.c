@@ -396,7 +396,6 @@ soter_status_t soter_rsa_priv_key_to_engine_specific(const soter_container_hdr_t
     }
 
     pub_exp = soter_rsa_priv_key_get_pub_exp(key, rsa_mod_size);
-    ;
     switch (pub_exp) {
     case RSA_3:
     case RSA_F4:
