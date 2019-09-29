@@ -17,3 +17,4 @@ project(themis)
 cmake_minimum_required(VERSION 3.8)
 
 add_subdirectory(src/soter)
+add_subdirectory(src/themis)
