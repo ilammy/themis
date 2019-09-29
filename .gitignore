@@ -76,3 +76,10 @@ docs/examples/objc/iOS-Carthage/Carthage
 **/*.rs.bk
 Cargo.lock
 
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+build.ninja
+rules.ninja
