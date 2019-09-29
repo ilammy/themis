@@ -23,7 +23,7 @@ else()
     set(ENGINE OpenSSL)
 endif()
 
-if(ENGINE EQUAL BoringSSL)
+if(${ENGINE} STREQUAL BoringSSL)
     file(GLOB engine_src boringssl/*.c)
 else()
     file(GLOB engine_src openssl/*.c)
@@ -52,8 +52,18 @@ set_target_properties(soter_shared PROPERTIES OUTPUT_NAME soter)
 set_property(TARGET soter_object PROPERTY POSITION_INDEPENDENT_CODE 1)
 
 # TODO: support for BoringSSL and LibreSSL
-if(ENGINE EQUAL OpenSSL)
+# TODO: set CRYPTO_ENGINE_PATH and CRYPTO_ENGINE_DEF
+if(${ENGINE} STREQUAL OpenSSL)
+    # If we're on macOS then tell CMake about OpenSSL installed by Homebrew,
+    # unless the user gives their own hints
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin" AND NOT DEFINED OPENSSL_ROOT_DIR)
+        execute_process(COMMAND brew --prefix openssl
+                        OUTPUT_VARIABLE OPENSSL_ROOT_DIR
+                        OUTPUT_STRIP_TRAILING_WHITESPACE
+                        ERROR_QUIET)
+    endif()
     find_package(OpenSSL REQUIRED)
-    target_include_directories(soter_object PRIVATE ${OPENSSL_INCLUDE_DIR})
-    target_link_libraries(soter_object INTERFACE ${OPENSSL_CRYPTO_LIBRARY})
+    target_link_libraries(soter_object OpenSSL::Crypto)
+    target_link_libraries(soter_static OpenSSL::Crypto)
+    target_link_libraries(soter_shared OpenSSL::Crypto)
 endif()
