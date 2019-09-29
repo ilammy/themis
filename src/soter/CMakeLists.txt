@@ -66,4 +66,9 @@ if(${ENGINE} STREQUAL OpenSSL)
     target_link_libraries(soter_object OpenSSL::Crypto)
     target_link_libraries(soter_static OpenSSL::Crypto)
     target_link_libraries(soter_shared OpenSSL::Crypto)
+    # Due to historical reasons Themis needs access to Soter cryptographic engine,
+    # export the path here so that it can be reused.
+    set(soter_engine_include "${OPENSSL_INCLUDE_DIR}"
+        CACHE PATH "Soter cryptographic engine include directory")
+    mark_as_advanced(soter_engine_include)
 endif()

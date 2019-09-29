@@ -36,5 +36,8 @@ set_target_properties(themis_shared PROPERTIES OUTPUT_NAME themis)
 # i686, x86_64, ARMv7, ARMv8, ARM64.
 set_property(TARGET themis_object PROPERTY POSITION_INDEPENDENT_CODE 1)
 
+# Due to historical reasons Themis needs access to Soter cryptographic engine:
+target_include_directories(themis_object PRIVATE ${soter_engine_include})
+
 target_link_libraries(themis_static soter_static)
 target_link_libraries(themis_shared soter_shared)
