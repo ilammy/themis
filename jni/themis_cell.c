@@ -18,6 +18,8 @@
 #include <themis/secure_cell.h>
 #include <themis/themis_error.h>
 
+#include "themis_exception.h"
+
 /* These definitions should correspond to the ones in SecureCell.java */
 #define MODE_SEAL 0
 #define MODE_TOKEN_PROTECT 1
@@ -54,17 +56,20 @@ JNIEXPORT jobjectArray JNICALL Java_com_cossacklabs_themis_SecureCell_encrypt(
 
     key_buf = (*env)->GetByteArrayElements(env, key, NULL);
     if (!key_buf) {
+        res = THEMIS_FAIL;
         return NULL;
     }
 
     data_buf = (*env)->GetByteArrayElements(env, data, NULL);
     if (!data_buf) {
+        res = THEMIS_FAIL;
         goto err;
     }
 
     if (context) {
         context_buf = (*env)->GetByteArrayElements(env, context, NULL);
         if (!context_buf) {
+            res = THEMIS_FAIL;
             goto err;
         }
     }
@@ -95,6 +100,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_cossacklabs_themis_SecureCell_encrypt(
     case MODE_CONTEXT_IMPRINT:
         if (!context) {
             /* Context is mandatory for this mode */
+            res = THEMIS_INVALID_PARAMETER;
             goto err;
         }
 
@@ -108,6 +114,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_cossacklabs_themis_SecureCell_encrypt(
                                                          &encrypted_data_length);
         break;
     default:
+        res = THEMIS_NOT_SUPPORTED;
         goto err;
     }
 
@@ -117,24 +124,28 @@ JNIEXPORT jobjectArray JNICALL Java_com_cossacklabs_themis_SecureCell_encrypt(
 
     encrypted_data = (*env)->NewByteArray(env, encrypted_data_length);
     if (!encrypted_data) {
+        res = THEMIS_NO_MEMORY;
         goto err;
     }
 
     if (additional_data_length) {
         additional_data = (*env)->NewByteArray(env, additional_data_length);
         if (!additional_data) {
+            res = THEMIS_NO_MEMORY;
             goto err;
         }
     }
 
     encrypted_data_buf = (*env)->GetByteArrayElements(env, encrypted_data, NULL);
     if (!encrypted_data_buf) {
+        res = THEMIS_FAIL;
         goto err;
     }
 
     if (additional_data_length) {
         additional_data_buf = (*env)->GetByteArrayElements(env, additional_data, NULL);
         if (!additional_data_buf) {
+            res = THEMIS_FAIL;
             goto err;
         }
     }
@@ -178,6 +189,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_cossacklabs_themis_SecureCell_encrypt(
                                                          &encrypted_data_length);
         break;
     default:
+        res = THEMIS_NOT_SUPPORTED;
         goto err;
     }
 
@@ -187,6 +199,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_cossacklabs_themis_SecureCell_encrypt(
 
     protected_data = (*env)->NewObjectArray(env, 2, (*env)->GetObjectClass(env, data), NULL);
     if (!protected_data) {
+        res = THEMIS_NO_MEMORY;
         goto err;
     }
 
@@ -216,6 +229,10 @@ err:
 
     if (key_buf) {
         (*env)->ReleaseByteArrayElements(env, key, key_buf, 0);
+    }
+
+    if (res != THEMIS_SUCCESS) {
+        throw_themis_secure_cell_exception(env, res);
     }
 
     return protected_data;
@@ -254,6 +271,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_cossacklabs_themis_SecureCell_decrypt(
     encrypted_data = (*env)->GetObjectArrayElement(env, protected_data, 0);
     additional_data = (*env)->GetObjectArrayElement(env, protected_data, 1);
     if (!encrypted_data) {
+        res = THEMIS_FAIL;
         return NULL;
     }
 
@@ -264,17 +282,20 @@ JNIEXPORT jbyteArray JNICALL Java_com_cossacklabs_themis_SecureCell_decrypt(
 
     key_buf = (*env)->GetByteArrayElements(env, key, NULL);
     if (!key_buf) {
+        res = THEMIS_FAIL;
         return NULL;
     }
 
     encrypted_data_buf = (*env)->GetByteArrayElements(env, encrypted_data, NULL);
     if (!encrypted_data_buf) {
+        res = THEMIS_FAIL;
         goto err;
     }
 
     if (context) {
         context_buf = (*env)->GetByteArrayElements(env, context, NULL);
         if (!context_buf) {
+            res = THEMIS_FAIL;
             goto err;
         }
     }
@@ -282,6 +303,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_cossacklabs_themis_SecureCell_decrypt(
     if (additional_data) {
         additional_data_buf = (*env)->GetByteArrayElements(env, additional_data, NULL);
         if (!additional_data_buf) {
+            res = THEMIS_FAIL;
             goto err;
         }
     }
@@ -300,6 +322,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_cossacklabs_themis_SecureCell_decrypt(
     case MODE_TOKEN_PROTECT:
         if (!additional_data_buf) {
             /* Additional data is mandatory for this mode */
+            res = THEMIS_INVALID_PARAMETER;
             goto err;
         }
 
@@ -317,6 +340,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_cossacklabs_themis_SecureCell_decrypt(
     case MODE_CONTEXT_IMPRINT:
         if (!context) {
             /* Context is mandatory for this mode */
+            res = THEMIS_INVALID_PARAMETER;
             goto err;
         }
 
@@ -330,6 +354,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_cossacklabs_themis_SecureCell_decrypt(
                                                          &data_length);
         break;
     default:
+        res = THEMIS_NOT_SUPPORTED;
         goto err;
     }
 
@@ -339,11 +364,13 @@ JNIEXPORT jbyteArray JNICALL Java_com_cossacklabs_themis_SecureCell_decrypt(
 
     data = (*env)->NewByteArray(env, data_length);
     if (!data) {
+        res = THEMIS_NO_MEMORY;
         goto err;
     }
 
     data_buf = (*env)->GetByteArrayElements(env, data, NULL);
     if (!data_buf) {
+        res = THEMIS_FAIL;
         goto err;
     }
 
@@ -361,6 +388,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_cossacklabs_themis_SecureCell_decrypt(
     case MODE_TOKEN_PROTECT:
         if (!additional_data_buf) {
             /* Additional data is mandatory for this mode */
+            res = THEMIS_INVALID_PARAMETER;
             goto err;
         }
 
@@ -378,6 +406,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_cossacklabs_themis_SecureCell_decrypt(
     case MODE_CONTEXT_IMPRINT:
         if (!context) {
             /* Context is mandatory for this mode */
+            res = THEMIS_INVALID_PARAMETER;
             goto err;
         }
 
@@ -391,6 +420,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_cossacklabs_themis_SecureCell_decrypt(
                                                          &data_length);
         break;
     default:
+        res = THEMIS_NOT_SUPPORTED;
         goto err;
     }
 
@@ -420,6 +450,10 @@ err:
 
     if (key_buf) {
         (*env)->ReleaseByteArrayElements(env, key, key_buf, 0);
+    }
+
+    if (res != THEMIS_SUCCESS) {
+        throw_themis_secure_cell_exception(env, res);
     }
 
     return output;
