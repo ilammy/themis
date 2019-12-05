@@ -48,7 +48,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_cossacklabs_themis_SecureCell_encrypt(
     jbyte* encrypted_data_buf = NULL;
     jbyte* additional_data_buf = NULL;
 
-    themis_status_t res;
+    themis_status_t res = THEMIS_FAIL;
 
     if (context) {
         context_length = (*env)->GetArrayLength(env, context);
@@ -262,7 +262,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_cossacklabs_themis_SecureCell_decrypt(
     jbyte* encrypted_data_buf = NULL;
     jbyte* additional_data_buf = NULL;
 
-    themis_status_t res;
+    themis_status_t res = THEMIS_FAIL;
 
     if (context) {
         context_length = (*env)->GetArrayLength(env, context);
