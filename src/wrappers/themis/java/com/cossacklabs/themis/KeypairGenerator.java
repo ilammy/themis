@@ -29,7 +29,7 @@ public abstract class KeypairGenerator {
 		
 	}
 	
-	static native byte[][] generateKeys(int keyType);
+	static native byte[][] generateKeys(int keyType) throws KeyGenerationException;
 	
 	/**
 	 * Generates new EC keypair

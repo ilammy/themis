@@ -18,6 +18,8 @@
 #include <themis/secure_keygen.h>
 #include <themis/themis_error.h>
 
+#include "themis_exception.h"
+
 /* Should be same as in AsymmetricKey.java */
 #define KEYTYPE_EC 0
 #define KEYTYPE_RSA 1
@@ -49,32 +51,37 @@ JNIEXPORT jobjectArray JNICALL Java_com_cossacklabs_themis_KeypairGenerator_gene
         res = themis_gen_rsa_key_pair(NULL, &private_key_length, NULL, &public_key_length);
         break;
     default:
-        return NULL;
+        res = THEMIS_NOT_SUPPORTED;
+        goto exception;
     }
 
     if (THEMIS_BUFFER_TOO_SMALL != res) {
-        return NULL;
+        goto exception;
     }
 
     private_key = (*env)->NewByteArray(env, private_key_length);
     if (!private_key) {
-        return NULL;
+        res = THEMIS_NO_MEMORY;
+        goto exception;
     }
 
     public_key = (*env)->NewByteArray(env, public_key_length);
     if (!public_key) {
-        return NULL;
+        res = THEMIS_NO_MEMORY;
+        goto exception;
     }
 
     priv_buf = (*env)->GetByteArrayElements(env, private_key, NULL);
     if (!priv_buf) {
-        return NULL;
+        res = THEMIS_FAIL;
+        goto exception;
     }
 
     pub_buf = (*env)->GetByteArrayElements(env, public_key, NULL);
     if (!pub_buf) {
         (*env)->ReleaseByteArrayElements(env, private_key, priv_buf, 0);
-        return NULL;
+        res = THEMIS_FAIL;
+        goto exception;
     }
 
     switch (key_type) {
@@ -93,23 +100,29 @@ JNIEXPORT jobjectArray JNICALL Java_com_cossacklabs_themis_KeypairGenerator_gene
     default:
         (*env)->ReleaseByteArrayElements(env, public_key, pub_buf, 0);
         (*env)->ReleaseByteArrayElements(env, private_key, priv_buf, 0);
-        return NULL;
+        res = THEMIS_NOT_SUPPORTED;
+        goto exception;
     }
 
     (*env)->ReleaseByteArrayElements(env, public_key, pub_buf, 0);
     (*env)->ReleaseByteArrayElements(env, private_key, priv_buf, 0);
 
     if (THEMIS_SUCCESS != res) {
-        return NULL;
+        goto exception;
     }
 
     keys = (*env)->NewObjectArray(env, 2, (*env)->GetObjectClass(env, private_key), NULL);
     if (!keys) {
-        return NULL;
+        res = THEMIS_NO_MEMORY;
+        goto exception;
     }
 
     (*env)->SetObjectArrayElement(env, keys, 0, private_key);
     (*env)->SetObjectArrayElement(env, keys, 1, public_key);
 
     return keys;
+
+exception:
+    throw_themis_key_generation_exception(env, res);
+    return NULL;
 }
