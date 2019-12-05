@@ -21,6 +21,8 @@
 #include <themis/themis_error.h>
 /*extern JavaVM *g_vm;*/
 
+#include "themis_exception.h"
+
 #define SESSION_BUFFER_FIELD_NAME "sessionPtr"
 #define SESSION_BUFFER_FIELD_SIG "J"
 
@@ -167,16 +169,18 @@ JNIEXPORT jlong JNICALL Java_com_cossacklabs_themis_SecureSession_jniLoad(JNIEnv
 
     size_t state_length = (*env)->GetArrayLength(env, state);
 
-    themis_status_t themis_status;
+    themis_status_t themis_status = THEMIS_FAIL;
     session_with_callbacks_t* ctx = NULL;
 
     jbyte* state_buf = (*env)->GetByteArrayElements(env, state, NULL);
     if (!state_buf) {
-        return 0;
+        themis_status = THEMIS_FAIL;
+        goto err;
     }
 
     ctx = malloc(sizeof(session_with_callbacks_t));
     if (!ctx) {
+        themis_status = THEMIS_NO_MEMORY;
         goto err;
     }
 
@@ -199,6 +203,10 @@ err:
         (*env)->ReleaseByteArrayElements(env, state, state_buf, 0);
     }
 
+    if (themis_status != THEMIS_SUCCESS) {
+        throw_themis_secure_session_exception(env, themis_status);
+    }
+
     return (intptr_t)ctx;
 }
 
@@ -210,33 +218,43 @@ JNIEXPORT jbyteArray JNICALL Java_com_cossacklabs_themis_SecureSession_jniSave(J
     jbyteArray state = NULL;
     jbyte* state_buf = NULL;
 
-    themis_status_t res;
+    themis_status_t res = THEMIS_FAIL;
 
     if (!ctx) {
-        return NULL;
+        res = THEMIS_FAIL;
+        goto err;
     }
 
     res = secure_session_save(&(ctx->session), NULL, &state_length);
     if (THEMIS_BUFFER_TOO_SMALL != res) {
-        return NULL;
+        goto err;
     }
 
     state = (*env)->NewByteArray(env, state_length);
     if (!state) {
-        return NULL;
+        res = THEMIS_NO_MEMORY;
+        goto err;
     }
 
     state_buf = (*env)->GetByteArrayElements(env, state, NULL);
     if (!state_buf) {
-        return NULL;
+        res = THEMIS_FAIL;
+        goto err;
     }
 
     res = secure_session_save(&(ctx->session), state_buf, &state_length);
-    (*env)->ReleaseByteArrayElements(env, state, state_buf, 0);
+
+err:
+
+    if (state_buf) {
+        (*env)->ReleaseByteArrayElements(env, state, state_buf, 0);
+    }
 
     if (THEMIS_SUCCESS == res) {
         return state;
     }
+
+    throw_themis_secure_session_exception(env, res);
 
     return NULL;
 }
@@ -272,15 +290,17 @@ JNIEXPORT jbyteArray JNICALL Java_com_cossacklabs_themis_SecureSession_jniWrap(J
     jbyteArray output = NULL;
     jbyteArray wrapped_data = NULL;
 
-    themis_status_t res;
+    themis_status_t res = THEMIS_FAIL;
 
     if (!ctx) {
-        return NULL;
+        res = THEMIS_FAIL;
+        goto err;
     }
 
     data_buf = (*env)->GetByteArrayElements(env, data, NULL);
     if (!data_buf) {
-        return NULL;
+        res = THEMIS_FAIL;
+        goto err;
     }
 
     ctx->env = env;
@@ -293,11 +313,13 @@ JNIEXPORT jbyteArray JNICALL Java_com_cossacklabs_themis_SecureSession_jniWrap(J
 
     wrapped_data = (*env)->NewByteArray(env, wrapped_data_length);
     if (!wrapped_data) {
+        res = THEMIS_NO_MEMORY;
         goto err;
     }
 
     wrapped_data_buf = (*env)->GetByteArrayElements(env, wrapped_data, NULL);
     if (!wrapped_data_buf) {
+        res = THEMIS_FAIL;
         goto err;
     }
 
@@ -321,6 +343,10 @@ err:
         (*env)->ReleaseByteArrayElements(env, data, data_buf, 0);
     }
 
+    if (res != THEMIS_SUCCESS) [
+        throw_themis_secure_session_exception(env, res);
+    ]
+
     return output;
 }
 
@@ -333,7 +359,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_cossacklabs_themis_SecureSession_jniUnwr
 
     size_t data_length;
 
-    themis_status_t res;
+    themis_status_t res = THEMIS_FAIL;
 
     jbyte data_type;
     jbyteArray data_type_array = NULL;
@@ -346,21 +372,25 @@ JNIEXPORT jobjectArray JNICALL Java_com_cossacklabs_themis_SecureSession_jniUnwr
     jobjectArray output = NULL;
 
     if (!ctx) {
-        return NULL;
+        res = THEMIS_FAIL;
+        goto err;
     }
 
     wrapped_data_buf = (*env)->GetByteArrayElements(env, wrapped_data, NULL);
     if (!wrapped_data_buf) {
-        return NULL;
+        res = THEMIS_FAIL;
+        goto err;
     }
 
     unwrapped_data = (*env)->NewObjectArray(env, 2, (*env)->GetObjectClass(env, wrapped_data), NULL);
     if (!unwrapped_data) {
+        res = THEMIS_NO_MEMORY;
         goto err;
     }
 
     data_type_array = (*env)->NewByteArray(env, 1);
     if (!data_type_array) {
+        res = THEMIS_NO_MEMORY;
         goto err;
     }
 
@@ -381,11 +411,13 @@ JNIEXPORT jobjectArray JNICALL Java_com_cossacklabs_themis_SecureSession_jniUnwr
 
     data_array = (*env)->NewByteArray(env, data_length);
     if (!data_array) {
+        res = THEMIS_NO_MEMORY;
         goto err;
     }
 
     data_buf = (*env)->GetByteArrayElements(env, data_array, NULL);
     if (!data_buf) {
+        res = THEMIS_FAIL;
         goto err;
     }
 
@@ -396,6 +428,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_cossacklabs_themis_SecureSession_jniUnwr
         (*env)->SetByteArrayRegion(env, data_type_array, 0, 1, &data_type);
         (*env)->SetObjectArrayElement(env, unwrapped_data, 0, data_type_array);
         output = unwrapped_data;
+        res = THEMIS_SUCCESS;
         goto err;
     } else if ((THEMIS_SSESSION_SEND_OUTPUT_TO_PEER == res) && (data_length > 0)) {
         /* Negotiation continues. Send output to peer */
@@ -404,6 +437,7 @@ JNIEXPORT jobjectArray JNICALL Java_com_cossacklabs_themis_SecureSession_jniUnwr
         (*env)->SetObjectArrayElement(env, unwrapped_data, 0, data_type_array);
         (*env)->SetObjectArrayElement(env, unwrapped_data, 1, data_array);
         output = unwrapped_data;
+        res = THEMIS_SUCCESS;
         goto err;
     } else if ((THEMIS_SUCCESS == res) && (data_length > 0)) {
         /* This is user data */
@@ -428,6 +462,10 @@ err:
         (*env)->ReleaseByteArrayElements(env, wrapped_data, wrapped_data_buf, 0);
     }
 
+    if (res != THEMIS_SUCCESS) {
+        throw_themis_secure_session_exception(env, res);
+    }
+
     return output;
 }
 
@@ -441,10 +479,11 @@ JNIEXPORT jbyteArray JNICALL Java_com_cossacklabs_themis_SecureSession_jniGenera
 
     jbyte* request_buf = NULL;
 
-    themis_status_t res;
+    themis_status_t res = THEMIS_FAIL;
 
     if (NULL == ctx) {
-        return NULL;
+        res = THEMIS_FAIL;
+        goto err;
     }
 
     ctx->env = env;
@@ -457,11 +496,13 @@ JNIEXPORT jbyteArray JNICALL Java_com_cossacklabs_themis_SecureSession_jniGenera
 
     request = (*env)->NewByteArray(env, request_length);
     if (!request) {
+        res = THEMIS_NO_MEMORY;
         goto err;
     }
 
     request_buf = (*env)->GetByteArrayElements(env, request, NULL);
     if (!request_buf) {
+        res = THEMIS_FAIL;
         goto err;
     }
 
@@ -481,6 +522,10 @@ err:
     ctx->env = NULL;
     ctx->thiz = NULL;
 
+    if (res != THEMIS_SUCCESS) {
+        throw_themis_secure_session_exception(env, res);
+    }
+
     return output;
 }
 
@@ -497,22 +542,25 @@ JNIEXPORT jlong JNICALL Java_com_cossacklabs_themis_SecureSession_create(JNIEnv*
     jbyte* id_buf = NULL;
     jbyte* sign_key_buf = NULL;
 
-    themis_status_t themis_status;
+    themis_status_t themis_status = THEMIS_FAIL;
 
     session_with_callbacks_t* ctx = NULL;
 
     id_buf = (*env)->GetByteArrayElements(env, id, NULL);
     if (!id_buf) {
-        return 0;
+        themis_status = THEMIS_FAIL;
+        goto err;
     }
 
     sign_key_buf = (*env)->GetByteArrayElements(env, sign_key, NULL);
     if (!sign_key_buf) {
+        themis_status = THEMIS_FAIL;
         goto err;
     }
 
     ctx = malloc(sizeof(session_with_callbacks_t));
     if (!ctx) {
+        themis_status = THEMIS_NO_MEMORY;
         goto err;
     }
 
@@ -550,6 +598,10 @@ err:
 
     if (id_buf) {
         (*env)->ReleaseByteArrayElements(env, id, id_buf, 0);
+    }
+
+    if (themis_status != THEMIS_SUCCESS) {
+        throw_themis_secure_session_exception(env, themis_status);
     }
 
     return (intptr_t)ctx;
