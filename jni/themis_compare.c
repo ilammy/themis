@@ -18,6 +18,8 @@
 #include <themis/secure_comparator.h>
 #include <themis/themis_error.h>
 
+#include "themis_exception.h"
+
 #define COMPARE_CTX_FIELD_NAME "nativeCtx"
 #define COMPARE_CTX_FIELD_SIG "J"
 
@@ -38,7 +40,7 @@ static secure_comparator_t* get_native_ctx(JNIEnv* env, jobject compare_obj)
     return (secure_comparator_t*)compare_ctx_ptr;
 }
 
-JNIEXPORT jint JNICALL Java_com_cossacklabs_themis_SecureCompare_jniAppend(JNIEnv* env,
+JNIEXPORT void JNICALL Java_com_cossacklabs_themis_SecureCompare_jniAppend(JNIEnv* env,
                                                                            jobject thiz,
                                                                            jbyteArray secret)
 {
@@ -46,22 +48,27 @@ JNIEXPORT jint JNICALL Java_com_cossacklabs_themis_SecureCompare_jniAppend(JNIEn
     size_t secret_length = (*env)->GetArrayLength(env, secret);
     jbyte* secret_buf;
 
-    themis_status_t res;
+    themis_status_t res = THEMIS_FAIL;
 
     if (NULL == ctx) {
-        return THEMIS_FAIL;
+        res = THEMIS_FAIL;
+        goto err;
     }
 
     secret_buf = (*env)->GetByteArrayElements(env, secret, NULL);
     if (!secret_buf) {
-        return THEMIS_FAIL;
+        res = THEMIS_FAIL;
+        goto err;
     }
 
     res = secure_comparator_append_secret(ctx, secret_buf, secret_length);
 
     (*env)->ReleaseByteArrayElements(env, secret, secret_buf, 0);
 
-    return (jint)res;
+err:
+    if (res != THEMIS_SUCCESS) {
+        throw_themis_secure_compare_exception(env, res);
+    }
 }
 
 JNIEXPORT jbyteArray JNICALL Java_com_cossacklabs_themis_SecureCompare_jniBegin(JNIEnv* env, jobject thiz)
@@ -70,46 +77,47 @@ JNIEXPORT jbyteArray JNICALL Java_com_cossacklabs_themis_SecureCompare_jniBegin(
     size_t compare_data_length = 0;
 
     jbyteArray compare_data;
-    jbyte* compare_data_buf;
+    jbyte* compare_data_buf = NULL;
 
-    themis_status_t res;
+    themis_status_t res = THEMIS_FAIL;
 
     if (NULL == ctx) {
-        return NULL;
+        res = THEMIS_FAIL;
+        goto err;
     }
 
     res = secure_comparator_begin_compare(ctx, NULL, &compare_data_length);
     if (THEMIS_BUFFER_TOO_SMALL != res) {
-        return NULL;
+        goto err;
     }
 
     compare_data = (*env)->NewByteArray(env, compare_data_length);
     if (!compare_data) {
-        return NULL;
+        res = THEMIS_NO_MEMORY;
+        goto err;
     }
 
     compare_data_buf = (*env)->GetByteArrayElements(env, compare_data, NULL);
     if (!compare_data_buf) {
-        return NULL;
+        res = THEMIS_FAIL;
+        goto err;
     }
 
     res = secure_comparator_begin_compare(ctx, compare_data_buf, &compare_data_length);
 
-    (*env)->ReleaseByteArrayElements(env, compare_data, compare_data_buf, 0);
+err:
+
+    if (compare_data_buf) {
+        (*env)->ReleaseByteArrayElements(env, compare_data, compare_data_buf, 0);
+    }
 
     if (THEMIS_SCOMPARE_SEND_OUTPUT_TO_PEER == res) {
         return compare_data;
     }
 
-    return NULL;
-}
+    throw_themis_secure_compare_exception(env, res);
 
-static void throwSecureCompareException(JNIEnv* env)
-{
-    jclass exception_class = (*env)->FindClass(env, "Lcom/cossacklabs/themis/SecureCompareException");
-    if (exception_class) {
-        (*env)->ThrowNew(env, exception_class, "");
-    }
+    return NULL;
 }
 
 JNIEXPORT jbyteArray JNICALL Java_com_cossacklabs_themis_SecureCompare_jniProceed(JNIEnv* env,
@@ -119,7 +127,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_cossacklabs_themis_SecureCompare_jniProcee
     secure_comparator_t* ctx = get_native_ctx(env, thiz);
     size_t compare_data_length = (*env)->GetArrayLength(env, compare_data);
 
-    jbyte* compare_data_buf;
+    jbyte* compare_data_buf = NULL;
 
     themis_status_t res = THEMIS_FAIL;
     size_t output_length = 0;
@@ -127,14 +135,14 @@ JNIEXPORT jbyteArray JNICALL Java_com_cossacklabs_themis_SecureCompare_jniProcee
     jbyte* output_buf = NULL;
 
     if (NULL == ctx) {
-        throwSecureCompareException(env);
-        return NULL;
+        res = THEMIS_FAIL;
+        goto err;
     }
 
     compare_data_buf = (*env)->GetByteArrayElements(env, compare_data, NULL);
     if (NULL == compare_data_buf) {
-        throwSecureCompareException(env);
-        return NULL;
+        res = THEMIS_FAIL;
+        goto err;
     }
 
     res = secure_comparator_proceed_compare(ctx, compare_data_buf, compare_data_length, NULL, &output_length);
@@ -144,11 +152,13 @@ JNIEXPORT jbyteArray JNICALL Java_com_cossacklabs_themis_SecureCompare_jniProcee
 
     output = (*env)->NewByteArray(env, output_length);
     if (!output) {
+        res = THEMIS_NO_MEMORY;
         goto err;
     }
 
     output_buf = (*env)->GetByteArrayElements(env, output, NULL);
     if (!output_buf) {
+        res = THEMIS_FAIL;
         goto err;
     }
 
@@ -173,7 +183,7 @@ err:
     }
 
     if (THEMIS_SUCCESS != res) {
-        throwSecureCompareException(env);
+        throw_themis_secure_compare_exception(env, res);
     }
 
     return NULL;
