@@ -15,16 +15,37 @@
  */
 
 #include <jni.h>
-#include <string.h>
+
 #include <themis/themis_error.h>
 
-/*JavaVM *g_vm = NULL;*/
+#include "themis_exception.h"
+
+static jint JNI_VERSION = JNI_VERSION_1_6;
 
 jint JNI_OnLoad(JavaVM* vm, void* reserved)
 {
-    /*g_vm = vm;*/
-    UNUSED(vm);
+    JNIEnv* env = NULL;
+
     UNUSED(reserved);
 
-    return JNI_VERSION_1_6;
+    if ((*vm)->GetEnv(vm, (void**) &env, JNI_VERSION) != JNI_OK) {
+        return JNI_ERR;
+    }
+
+    init_themis_exception_classes(env);
+
+    return JNI_VERSION;
+}
+
+void JNI_OnUnload(JavaVM* vm, void* reserved)
+{
+    JNIEnv* env = NULL;
+
+    UNUSED(reserved);
+
+    if ((*vm)->GetEnv(vm, (void**) &env, JNI_VERSION) != JNI_OK) {
+        return; /* welp, enjoy your leak */
+    }
+
+    free_themis_exception_classes(env);
 }

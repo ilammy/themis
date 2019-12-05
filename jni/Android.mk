@@ -54,6 +54,7 @@ LOCAL_MODULE := libthemis_jni
 
 LOCAL_SRC_FILES := themis_jni.c themis_message.c themis_keygen.c themis_cell.c themis_session.c
 LOCAL_SRC_FILES += themis_compare.c
+LOCAL_SRC_FILES += themis_exception.c
 LOCAL_CFLAGS := -DBORINGSSL -DCRYPTO_ENGINE_PATH=boringssl
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../src
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../third_party/boringssl/src/include
