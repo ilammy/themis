@@ -18,6 +18,8 @@
 #include <themis/secure_message.h>
 #include <themis/themis_error.h>
 
+#include "themis_exception.h"
+
 #define SECURE_MESSAGE_ENCRYPT 1
 #define SECURE_MESSAGE_DECRYPT 2
 #define SECURE_MESSAGE_SIGN 3
@@ -56,19 +58,22 @@ JNIEXPORT jbyteArray JNICALL Java_com_cossacklabs_themis_SecureMessage_process(J
     if (private_key) {
         priv_buf = (*env)->GetByteArrayElements(env, private_key, NULL);
         if (!priv_buf) {
-            return NULL;
+            res = THEMIS_FAIL;
+            goto err;
         }
     }
 
     if (public_key) {
         pub_buf = (*env)->GetByteArrayElements(env, public_key, NULL);
         if (!pub_buf) {
+            res = THEMIS_FAIL;
             goto err;
         }
     }
 
     message_buf = (*env)->GetByteArrayElements(env, message, NULL);
     if (!message_buf) {
+        res = THEMIS_FAIL;
         goto err;
     }
 
@@ -120,11 +125,13 @@ JNIEXPORT jbyteArray JNICALL Java_com_cossacklabs_themis_SecureMessage_process(J
 
     output = (*env)->NewByteArray(env, output_length);
     if (!output) {
+        res = THEMIS_NO_MEMORY;
         goto err;
     }
 
     output_buf = (*env)->GetByteArrayElements(env, output, NULL);
     if (!output_buf) {
+        res = THEMIS_FAIL;
         goto err;
     }
 
@@ -191,6 +198,8 @@ err:
     if (THEMIS_SUCCESS == res) {
         return output;
     }
+
+    throw_themis_secure_message_wrap_exception(env, res);
 
     return NULL;
 }
