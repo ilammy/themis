@@ -16,6 +16,17 @@
 
 package com.cossacklabs.themis;
 
-public class SecureCellException extends Exception {
+public class SecureCellException extends ThemisException {
 
+    SecureCellException() {
+        super(ThemisException.THEMIS_FAIL);
+    }
+
+    SecureCellException(int errorCode) {
+        super(errorCode);
+    }
+
+    SecureCellException(String message, int errorCode) {
+        super(message, errorCode);
+    }
 }

@@ -16,14 +16,39 @@
 
 package com.cossacklabs.themis;
 
-public class SecureSessionException extends Exception {
-	
-	public SecureSessionException() {
-		super();
-	}
-	
-	public SecureSessionException(String message) {
-		super(message);
-	}
-	
+public class SecureSessionException extends ThemisException {
+
+    public SecureSessionException() {
+        super(ThemisException.THEMIS_FAIL);
+    }
+
+    public SecureSessionException(String message) {
+        super(message, ThemisException.THEMIS_FAIL);
+    }
+
+    // The above constructors were historically public
+    // and kept that way for compatibility.
+
+    static String toString(int errorCode) {
+        switch (errorCode) {
+            case THEMIS_SSESSION_SEND_OUTPUT_TO_PEER:
+                return "send key agreement data to peer";
+            case THEMIS_SSESSION_KA_NOT_FINISHED:
+                return "key agreement not finished";
+            case THEMIS_SSESSION_TRANSPORT_ERROR:
+                return "transport layer error";
+            case THEMIS_SSESSION_GET_PUB_FOR_ID_CALLBACK_ERROR:
+                return "failed to get public key for ID";
+            default:
+                return ThemisException.toString(errorCode);
+        }
+    }
+
+    SecureSessionException(int errorCode) {
+        super(toString(errorCode), errorCode);
+    }
+
+    SecureSessionException(String message, int errorCode) {
+        super(message, errorCode);
+    }
 }

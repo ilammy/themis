@@ -16,6 +16,17 @@
 
 package com.cossacklabs.themis;
 
-public class KeyGenerationException extends RuntimeException {
+public class KeyGenerationException extends ThemisRuntimeException {
 
+    KeyGenerationException() {
+        super(ThemisException.THEMIS_FAIL);
+    }
+
+    KeyGenerationException(int errorCode) {
+        super(errorCode);
+    }
+
+    KeyGenerationException(String message, int errorCode) {
+        super(message, errorCode);
+    }
 }

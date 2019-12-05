@@ -16,6 +16,17 @@
 
 package com.cossacklabs.themis;
 
-public class SecureMessageWrapException extends Exception {
+public class SecureMessageWrapException extends ThemisException {
 
+    SecureMessageWrapException() {
+        super(ThemisException.THEMIS_FAIL);
+    }
+
+    SecureMessageWrapException(int errorCode) {
+        super(errorCode);
+    }
+
+    SecureMessageWrapException(String message, int errorCode) {
+        super(message, errorCode);
+    }
 }
