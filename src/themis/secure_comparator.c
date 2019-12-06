@@ -1019,6 +1019,8 @@ themis_status_t secure_comparator_begin_compare(secure_comparator_t* comp_ctx,
                                                 void* compare_data,
                                                 size_t* compare_data_length)
 {
+    themis_status_t res = THEMIS_FAIL;
+
     if ((!comp_ctx) || (!compare_data_length)) {
         return THEMIS_INVALID_PARAMETER;
     }
@@ -1028,7 +1030,13 @@ themis_status_t secure_comparator_begin_compare(secure_comparator_t* comp_ctx,
         return THEMIS_INVALID_PARAMETER;
     }
 
-    return secure_comparator_alice_step1(comp_ctx, compare_data, compare_data_length);
+    res = secure_comparator_alice_step1(comp_ctx, compare_data, compare_data_length);
+
+    if (res != THEMIS_SUCCESS && res != THEMIS_BUFFER_TOO_SMALL) {
+        soter_wipe(compare_data, *compare_data_length);
+    }
+
+    return res;
 }
 
 themis_status_t secure_comparator_proceed_compare(secure_comparator_t* comp_ctx,
@@ -1037,6 +1045,8 @@ themis_status_t secure_comparator_proceed_compare(secure_comparator_t* comp_ctx,
                                                   void* compare_data,
                                                   size_t* compare_data_length)
 {
+    themis_status_t res = THEMIS_FAIL;
+
     if ((!comp_ctx) || (!peer_compare_data) || (0 == peer_compare_data_length)
         || (!compare_data_length)) {
         return THEMIS_INVALID_PARAMETER;
@@ -1044,19 +1054,25 @@ themis_status_t secure_comparator_proceed_compare(secure_comparator_t* comp_ctx,
 
     if (comp_ctx->state_handler) {
         /* We are already comparing. Pass the data to the handler */
-        return comp_ctx->state_handler(comp_ctx,
-                                       peer_compare_data,
-                                       peer_compare_data_length,
-                                       compare_data,
-                                       compare_data_length);
+        res = comp_ctx->state_handler(comp_ctx,
+                                      peer_compare_data,
+                                      peer_compare_data_length,
+                                      compare_data,
+                                      compare_data_length);
+    } else {
+        /* This is initial proceed call. "Accept" the protocol. */
+        res = secure_comparator_bob_step2(comp_ctx,
+                                          peer_compare_data,
+                                          peer_compare_data_length,
+                                          compare_data,
+                                          compare_data_length);
     }
 
-    /* This is initial proceed call. "Accept" the protocol. */
-    return secure_comparator_bob_step2(comp_ctx,
-                                       peer_compare_data,
-                                       peer_compare_data_length,
-                                       compare_data,
-                                       compare_data_length);
+    if (res != THEMIS_SUCCESS && res != THEMIS_BUFFER_TOO_SMALL && res != THEMIS_SCOMPARE_SEND_OUTPUT_TO_PEER) {
+        soter_wipe(compare_data, *compare_data_length);
+    }
+
+    return res;
 }
 
 themis_status_t secure_comparator_get_result(const secure_comparator_t* comp_ctx)
