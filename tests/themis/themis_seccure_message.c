@@ -448,7 +448,7 @@ static int themis_secure_encrypted_message_generic_test(int alg,
                                               message_length,
                                               NULL,
                                               &wrapped_message_length),
-                   THEMIS_INVALID_PARAMETER,
+                   THEMIS_FAIL,
                    "themis secure message wrap (incorrect private key) failed");
         test_check(themis_secure_message_wrap(private_key,
                                               private_key_length,
@@ -458,7 +458,7 @@ static int themis_secure_encrypted_message_generic_test(int alg,
                                               message_length,
                                               NULL,
                                               &wrapped_message_length),
-                   THEMIS_INVALID_PARAMETER,
+                   THEMIS_FAIL,
                    "themis secure message wrap (incorrect public key) failed");
     } else {
         test_check(themis_secure_message_wrap(private_key,
@@ -479,7 +479,7 @@ static int themis_secure_encrypted_message_generic_test(int alg,
                                               message_length,
                                               NULL,
                                               &wrapped_message_length),
-                   THEMIS_INVALID_PARAMETER,
+                   THEMIS_FAIL,
                    "themis secure message wrap (incorrect public key) failed");
     }
 
@@ -524,7 +524,7 @@ static int themis_secure_encrypted_message_generic_test(int alg,
                                                      wrapped_message_length,
                                                      NULL,
                                                      &unwrapped_message_length),
-                        THEMIS_INVALID_PARAMETER,
+                        THEMIS_FAIL,
                         "themis secure message unwrap (incorrect private key) failed",
                         free(wrapped_message));
         test_check_free(themis_secure_message_unwrap(peer_private_key,
@@ -535,7 +535,7 @@ static int themis_secure_encrypted_message_generic_test(int alg,
                                                      wrapped_message_length,
                                                      NULL,
                                                      &unwrapped_message_length),
-                        THEMIS_INVALID_PARAMETER,
+                        THEMIS_FAIL,
                         "themis secure message unwrap (incorrect public key) failed",
                         free(wrapped_message));
     } else {
@@ -547,7 +547,7 @@ static int themis_secure_encrypted_message_generic_test(int alg,
                                                      wrapped_message_length,
                                                      NULL,
                                                      &unwrapped_message_length),
-                        THEMIS_INVALID_PARAMETER,
+                        THEMIS_FAIL,
                         "themis secure message unwrap (incorrect private key) failed",
                         free(wrapped_message));
         test_check_free(themis_secure_message_unwrap(peer_private_key,
@@ -688,7 +688,7 @@ static void themis_secure_message_encrypt_decrypt_api_test(void)
                                                                encrypted,
                                                                &encrypted_length),
                           "themis_secure_message_encrypt: private key is empty");
-    testsuite_fail_unless(THEMIS_INVALID_PARAMETER
+    testsuite_fail_unless(THEMIS_FAIL
                               == themis_secure_message_encrypt(private_key,
                                                                private_key_length - 1,
                                                                public_key,
@@ -719,7 +719,7 @@ static void themis_secure_message_encrypt_decrypt_api_test(void)
                                                                encrypted,
                                                                &encrypted_length),
                           "themis_secure_message_encrypt: public key is empty");
-    testsuite_fail_unless(THEMIS_INVALID_PARAMETER
+    testsuite_fail_unless(THEMIS_FAIL
                               == themis_secure_message_encrypt(private_key,
                                                                private_key_length,
                                                                public_key,
@@ -730,7 +730,7 @@ static void themis_secure_message_encrypt_decrypt_api_test(void)
                                                                &encrypted_length),
                           "themis_secure_message_encrypt: public key is invalid");
 
-    testsuite_fail_unless(THEMIS_INVALID_PARAMETER
+    testsuite_fail_unless(THEMIS_FAIL
                               == themis_secure_message_encrypt(public_key,
                                                                public_key_length,
                                                                private_key,
@@ -828,7 +828,7 @@ static void themis_secure_message_encrypt_decrypt_api_test(void)
                                                                decrypted,
                                                                &decrypted_length),
                           "themis_secure_message_decrypt: private key is empty");
-    testsuite_fail_unless(THEMIS_INVALID_PARAMETER
+    testsuite_fail_unless(THEMIS_FAIL
                               == themis_secure_message_decrypt(private_key,
                                                                private_key_length - 1,
                                                                public_key,
@@ -859,7 +859,7 @@ static void themis_secure_message_encrypt_decrypt_api_test(void)
                                                                decrypted,
                                                                &decrypted_length),
                           "themis_secure_message_decrypt: public key is empty");
-    testsuite_fail_unless(THEMIS_INVALID_PARAMETER
+    testsuite_fail_unless(THEMIS_FAIL
                               == themis_secure_message_decrypt(private_key,
                                                                private_key_length,
                                                                public_key,
@@ -870,7 +870,7 @@ static void themis_secure_message_encrypt_decrypt_api_test(void)
                                                                &decrypted_length),
                           "themis_secure_message_decrypt: public key is invalid");
 
-    testsuite_fail_unless(THEMIS_INVALID_PARAMETER
+    testsuite_fail_unless(THEMIS_FAIL
                               == themis_secure_message_decrypt(public_key,
                                                                public_key_length,
                                                                private_key,
@@ -993,7 +993,7 @@ static void themis_secure_message_sign_verify_api_test(void)
                                                             signed_msg,
                                                             &signed_msg_length),
                           "themis_secure_message_sign: private key is empty");
-    testsuite_fail_unless(THEMIS_INVALID_PARAMETER
+    testsuite_fail_unless(THEMIS_FAIL
                               == themis_secure_message_sign(private_key,
                                                             private_key_length - 1,
                                                             plaintext,
@@ -1002,7 +1002,7 @@ static void themis_secure_message_sign_verify_api_test(void)
                                                             &signed_msg_length),
                           "themis_secure_message_sign: private key is invalid");
 
-    testsuite_fail_unless(THEMIS_INVALID_PARAMETER
+    testsuite_fail_unless(THEMIS_FAIL
                               == themis_secure_message_sign(public_key,
                                                             public_key_length,
                                                             plaintext,
@@ -1082,7 +1082,7 @@ static void themis_secure_message_sign_verify_api_test(void)
                                                               verified,
                                                               &verified_length),
                           "themis_secure_message_verify: public key is empty");
-    testsuite_fail_unless(THEMIS_INVALID_PARAMETER
+    testsuite_fail_unless(THEMIS_FAIL
                               == themis_secure_message_verify(public_key,
                                                               public_key_length - 1,
                                                               signed_msg,
@@ -1091,7 +1091,7 @@ static void themis_secure_message_sign_verify_api_test(void)
                                                               &verified_length),
                           "themis_secure_message_verify: public key is invalid");
 
-    testsuite_fail_unless(THEMIS_INVALID_PARAMETER
+    testsuite_fail_unless(THEMIS_FAIL
                               == themis_secure_message_verify(private_key,
                                                               private_key_length,
                                                               signed_msg,
@@ -1225,7 +1225,7 @@ static void secure_message_old_api_test(void)
                                                             ciphertext,
                                                             &ciphertext_length),
                           "themis_secure_message_wrap: invalid private key");
-    testsuite_fail_unless(THEMIS_INVALID_PARAMETER
+    testsuite_fail_unless(THEMIS_FAIL
                               == themis_secure_message_wrap(priv,
                                                             priv_length - 1,
                                                             peer_pub,
@@ -1235,7 +1235,7 @@ static void secure_message_old_api_test(void)
                                                             ciphertext,
                                                             &ciphertext_length),
                           "themis_secure_message_wrap: invalid private key length");
-    testsuite_fail_unless(THEMIS_INVALID_PARAMETER
+    testsuite_fail_unless(THEMIS_FAIL
                               == themis_secure_message_wrap(priv,
                                                             priv_length,
                                                             peer_pub,
@@ -1310,7 +1310,7 @@ static void secure_message_old_api_test(void)
                                                               decryptext,
                                                               &decryptext_length),
                           "themis_secure_message_unwrap: invalid private key");
-    testsuite_fail_unless(THEMIS_INVALID_PARAMETER
+    testsuite_fail_unless(THEMIS_FAIL
                               == themis_secure_message_unwrap(peer_priv,
                                                               peer_priv_length - 1,
                                                               pub,
@@ -1320,7 +1320,7 @@ static void secure_message_old_api_test(void)
                                                               decryptext,
                                                               &decryptext_length),
                           "themis_secure_message_unwrap: invalid private key length");
-    testsuite_fail_unless(THEMIS_INVALID_PARAMETER
+    testsuite_fail_unless(THEMIS_FAIL
                               == themis_secure_message_unwrap(peer_priv,
                                                               peer_priv_length,
                                                               pub,
