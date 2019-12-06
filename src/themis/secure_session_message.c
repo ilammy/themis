@@ -18,6 +18,7 @@
 #include <time.h>
 
 #include "soter/soter_container.h"
+#include "soter/soter_wipe.h"
 
 #include "themis/secure_session.h"
 #include "themis/secure_session_t.h"
@@ -45,7 +46,7 @@ themis_status_t secure_session_wrap(secure_session_t* session_ctx,
     uint8_t* ts = (uint8_t*)(seq + 1);
 
     uint64_t curr_time;
-    themis_status_t res;
+    themis_status_t res = THEMIS_FAIL;
 
     if ((NULL == session_ctx) || (NULL == message) || (0 == message_length)
         || (NULL == wrapped_message_length)) {
@@ -73,7 +74,7 @@ themis_status_t secure_session_wrap(secure_session_t* session_ctx,
 
     res = soter_rand(iv, CIPHER_MAX_BLOCK_SIZE);
     if (THEMIS_SUCCESS != res) {
-        return res;
+        goto error;
     }
 
     res = encrypt_gcm(session_ctx->out_cipher_key,
@@ -86,13 +87,20 @@ themis_status_t secure_session_wrap(secure_session_t* session_ctx,
                       message_length + sizeof(uint32_t) + sizeof(uint64_t) + sizeof(uint32_t)
                           + CIPHER_AUTH_TAG_SIZE);
     if (THEMIS_SUCCESS != res) {
-        return res;
+        goto error;
     }
 
     *session_id = htobe32(session_ctx->session_id);
     session_ctx->out_seq++;
 
     return THEMIS_SUCCESS;
+
+error:
+    if (res != THEMIS_SUCCESS && res != THEMIS_BUFFER_TOO_SMALL) {
+        soter_wipe(wrapped_message, *wrapped_message_length);
+    }
+
+    return res;
 }
 
 themis_status_t secure_session_unwrap(secure_session_t* session_ctx,
@@ -111,9 +119,9 @@ themis_status_t secure_session_unwrap(secure_session_t* session_ctx,
     uint64_t ts;
 
     time_t curr_time;
-    themis_status_t res;
+    themis_status_t res = THEMIS_FAIL;
 
-    soter_sym_ctx_t* sym_ctx;
+    soter_sym_ctx_t* sym_ctx = NULL;
 
     if ((NULL == session_ctx) || (NULL == wrapped_message) || (NULL == message_length)) {
         return THEMIS_INVALID_PARAMETER;
@@ -129,7 +137,7 @@ themis_status_t secure_session_unwrap(secure_session_t* session_ctx,
             return THEMIS_SSESSION_SEND_OUTPUT_TO_PEER;
         }
 
-        return res;
+        goto err;
     }
 
     if (WRAP_AUX_DATA > wrapped_message_length) {
@@ -158,7 +166,8 @@ themis_status_t secure_session_unwrap(secure_session_t* session_ctx,
                                             iv,
                                             CIPHER_MAX_BLOCK_SIZE);
     if (NULL == sym_ctx) {
-        return THEMIS_FAIL;
+        res = THEMIS_FAIL;
+        goto err;
     }
 
     /* TODO: change to GCM when fixed */
@@ -243,6 +252,10 @@ err:
 
     if (NULL != sym_ctx) {
         soter_sym_aead_decrypt_destroy(sym_ctx);
+    }
+
+    if (res != THEMIS_SUCCESS && res != THEMIS_BUFFER_TOO_SMALL) {
+        soter_wipe(message, *message_length);
     }
 
     return res;

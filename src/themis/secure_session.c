@@ -148,13 +148,12 @@ secure_session_t* secure_session_create(const void* id,
         return NULL;
     }
 
-    memset(ctx, 0, sizeof(secure_session_t));
-
     if (THEMIS_SUCCESS
         == secure_session_init(ctx, id, id_length, sign_key, sign_key_length, user_callbacks)) {
         return ctx;
     }
 
+    soter_wipe(ctx, sizeof(*ctx));
     free(ctx);
     return NULL;
 }
@@ -171,14 +170,15 @@ themis_status_t secure_session_generate_connect_request(secure_session_t* sessio
     size_t ecdh_key_length = 0;
     size_t signature_length = 0;
 
-    soter_status_t soter_status;
-    themis_status_t res = THEMIS_SUCCESS;
+    soter_status_t soter_status = SOTER_FAIL;
+    themis_status_t res = THEMIS_FAIL;
 
     soter_kdf_context_buf_t sign_data;
 
     soter_status = soter_asym_ka_export_key(&(session_ctx->ecdh_ctx), NULL, &ecdh_key_length, false);
     if (THEMIS_BUFFER_TOO_SMALL != soter_status) {
-        return soter_status;
+        res = soter_status;
+        goto error;
     }
     res = compute_signature(session_ctx->we.sign_key,
                             session_ctx->we.sign_key_length,
@@ -187,7 +187,7 @@ themis_status_t secure_session_generate_connect_request(secure_session_t* sessio
                             NULL,
                             &signature_length);
     if (THEMIS_BUFFER_TOO_SMALL != res) {
-        return res;
+        goto error;
     }
     length_to_send = 2 * sizeof(soter_container_hdr_t) + session_ctx->we.id_length + ecdh_key_length
                      + signature_length;
@@ -213,7 +213,8 @@ themis_status_t secure_session_generate_connect_request(secure_session_t* sessio
                                             &ecdh_key_length,
                                             false);
     if (THEMIS_SUCCESS != soter_status) {
-        return soter_status;
+        res = soter_status;
+        goto error;
     }
     sign_data.data = data_to_send + (2 * sizeof(soter_container_hdr_t)) + session_ctx->we.id_length;
     sign_data.length = ecdh_key_length;
@@ -230,7 +231,7 @@ themis_status_t secure_session_generate_connect_request(secure_session_t* sessio
                                 + session_ctx->we.id_length + ecdh_key_length,
                             &signature_length);
     if (THEMIS_SUCCESS != res) {
-        return res;
+        goto error;
     }
 
     length_to_send += signature_length;
@@ -250,6 +251,13 @@ themis_status_t secure_session_generate_connect_request(secure_session_t* sessio
     }
 
     return THEMIS_SUCCESS;
+
+error:
+    if (res != THEMIS_SUCCESS && res != THEMIS_BUFFER_TOO_SMALL) {
+        soter_wipe(output, *output_length);
+    }
+
+    return res;
 }
 
 themis_status_t secure_session_connect(secure_session_t* session_ctx)
@@ -287,6 +295,9 @@ themis_status_t secure_session_connect(secure_session_t* session_ctx)
             session_ctx->is_client = false;
         }
     }
+
+    soter_wipe(stack_buf, sizeof(stack_buf));
+    soter_wipe(request, request_length);
 
     if (request != stack_buf) {
         free(request);
@@ -1050,6 +1061,10 @@ ssize_t secure_session_send(secure_session_t* session_ctx, const void* message, 
 
 err:
 
+    /* May wipe the same memory twice, don't really care */
+    soter_wipe(stack_buf, sizeof(stack_buf));
+    soter_wipe(out, out_size);
+
     if (out != stack_buf) {
         free(out);
     }
@@ -1121,6 +1136,8 @@ ssize_t secure_session_receive(secure_session_t* session_ctx, void* message, siz
                                                                     session_ctx->user_callbacks->user_data);
             }
 
+            soter_wipe(ka_buf, sizeof(ka_buf));
+
             if (bytes_sent != (ssize_t)ka_buf_length) {
                 res = THEMIS_SSESSION_TRANSPORT_ERROR;
 
@@ -1137,6 +1154,10 @@ ssize_t secure_session_receive(secure_session_t* session_ctx, void* message, siz
     }
 
 err:
+
+    /* May wipe the same memory twice, don't really care */
+    soter_wipe(stack_buf, sizeof(stack_buf));
+    soter_wipe(in, in_size);
 
     if (in != stack_buf) {
         free(in);
