@@ -27,22 +27,31 @@ themis_status_t themis_secure_cell_encrypt_seal(const uint8_t* master_key,
                                                 uint8_t* encrypted_message,
                                                 size_t* encrypted_message_length)
 {
-    size_t ctx_length_;
-    size_t msg_length_;
-    size_t total_length;
+    themis_status_t res = THEMIS_FAIL;
+    size_t ctx_length_ = 0;
+    size_t msg_length_ = 0;
+    size_t total_length = 0;
 
+    THEMIS_CHECK_PARAM(master_key != NULL);
+    THEMIS_CHECK_PARAM(master_key_length != 0);
+    THEMIS_CHECK_PARAM(message != NULL);
+    THEMIS_CHECK_PARAM(message_length != 0);
     THEMIS_CHECK_PARAM(encrypted_message_length != NULL);
-    THEMIS_STATUS_CHECK(themis_auth_sym_encrypt_message(master_key,
-                                                        master_key_length,
-                                                        message,
-                                                        message_length,
-                                                        user_context,
-                                                        user_context_length,
-                                                        NULL,
-                                                        &ctx_length_,
-                                                        NULL,
-                                                        &msg_length_),
-                        THEMIS_BUFFER_TOO_SMALL);
+    /* user_context is optional for Seal mode */
+
+    res = themis_auth_sym_encrypt_message(master_key,
+                                          master_key_length,
+                                          message,
+                                          message_length,
+                                          user_context,
+                                          user_context_length,
+                                          NULL,
+                                          &ctx_length_,
+                                          NULL,
+                                          &msg_length_);
+    if (res != THEMIS_BUFFER_TOO_SMALL) {
+        return res;
+    }
 
     total_length = ctx_length_ + msg_length_;
     if (!encrypted_message || *encrypted_message_length < total_length) {
@@ -51,16 +60,17 @@ themis_status_t themis_secure_cell_encrypt_seal(const uint8_t* master_key,
     }
 
     *encrypted_message_length = total_length;
-    return themis_auth_sym_encrypt_message(master_key,
-                                           master_key_length,
-                                           message,
-                                           message_length,
-                                           user_context,
-                                           user_context_length,
-                                           encrypted_message,
-                                           &ctx_length_,
-                                           encrypted_message + ctx_length_,
-                                           &msg_length_);
+    res = themis_auth_sym_encrypt_message(master_key,
+                                          master_key_length,
+                                          message,
+                                          message_length,
+                                          user_context,
+                                          user_context_length,
+                                          encrypted_message,
+                                          &ctx_length_,
+                                          encrypted_message + ctx_length_,
+                                          &msg_length_);
+    return res;
 }
 
 themis_status_t themis_secure_cell_decrypt_seal(const uint8_t* master_key,
@@ -72,33 +82,47 @@ themis_status_t themis_secure_cell_decrypt_seal(const uint8_t* master_key,
                                                 uint8_t* plain_message,
                                                 size_t* plain_message_length)
 {
+    themis_status_t res = THEMIS_FAIL;
     size_t ctx_length_ = 0;
     size_t msg_length_ = 0;
-    THEMIS_STATUS_CHECK(themis_auth_sym_decrypt_message(master_key,
-                                                        master_key_length,
-                                                        user_context,
-                                                        user_context_length,
-                                                        encrypted_message,
-                                                        encrypted_message_length,
-                                                        NULL,
-                                                        0,
-                                                        NULL,
-                                                        &msg_length_),
-                        THEMIS_BUFFER_TOO_SMALL);
+
+    THEMIS_CHECK_PARAM(master_key != NULL);
+    THEMIS_CHECK_PARAM(master_key_length != 0);
+    THEMIS_CHECK_PARAM(encrypted_message != NULL);
+    THEMIS_CHECK_PARAM(encrypted_message_length != 0);
+    THEMIS_CHECK_PARAM(plain_message_length != NULL);
+    /* user_context is optional for Seal mode */
+
+    res = themis_auth_sym_decrypt_message(master_key,
+                                          master_key_length,
+                                          user_context,
+                                          user_context_length,
+                                          encrypted_message,
+                                          encrypted_message_length,
+                                          NULL,
+                                          0,
+                                          NULL,
+                                          &msg_length_);
+    if (res != THEMIS_BUFFER_TOO_SMALL) {
+        return res;
+    }
+
     if (encrypted_message_length < msg_length_) {
-        return THEMIS_INVALID_PARAMETER;
+        return THEMIS_FAIL;
     }
     ctx_length_ = encrypted_message_length - msg_length_;
-    return themis_auth_sym_decrypt_message(master_key,
-                                           master_key_length,
-                                           user_context,
-                                           user_context_length,
-                                           encrypted_message,
-                                           ctx_length_,
-                                           encrypted_message + ctx_length_,
-                                           msg_length_,
-                                           plain_message,
-                                           plain_message_length);
+
+    res = themis_auth_sym_decrypt_message(master_key,
+                                          master_key_length,
+                                          user_context,
+                                          user_context_length,
+                                          encrypted_message,
+                                          ctx_length_,
+                                          encrypted_message + ctx_length_,
+                                          msg_length_,
+                                          plain_message,
+                                          plain_message_length);
+    return res;
 }
 
 themis_status_t themis_secure_cell_encrypt_token_protect(const uint8_t* master_key,
@@ -112,16 +136,27 @@ themis_status_t themis_secure_cell_encrypt_token_protect(const uint8_t* master_k
                                                          uint8_t* encrypted_message,
                                                          size_t* encrypted_message_length)
 {
-    return themis_auth_sym_encrypt_message(master_key,
-                                           master_key_length,
-                                           message,
-                                           message_length,
-                                           user_context,
-                                           user_context_length,
-                                           context,
-                                           context_length,
-                                           encrypted_message,
-                                           encrypted_message_length);
+    themis_status_t res = THEMIS_FAIL;
+
+    THEMIS_CHECK_PARAM(master_key != NULL);
+    THEMIS_CHECK_PARAM(master_key_length != 0);
+    THEMIS_CHECK_PARAM(message != NULL);
+    THEMIS_CHECK_PARAM(message_length != 0);
+    THEMIS_CHECK_PARAM(context_length != NULL);
+    THEMIS_CHECK_PARAM(encrypted_message_length != NULL);
+    /* user_context is optional for Token Protect mode */
+
+    res = themis_auth_sym_encrypt_message(master_key,
+                                          master_key_length,
+                                          message,
+                                          message_length,
+                                          user_context,
+                                          user_context_length,
+                                          context,
+                                          context_length,
+                                          encrypted_message,
+                                          encrypted_message_length);
+    return res;
 }
 
 themis_status_t themis_secure_cell_decrypt_token_protect(const uint8_t* master_key,
@@ -135,16 +170,28 @@ themis_status_t themis_secure_cell_decrypt_token_protect(const uint8_t* master_k
                                                          uint8_t* plain_message,
                                                          size_t* plain_message_length)
 {
-    return themis_auth_sym_decrypt_message(master_key,
-                                           master_key_length,
-                                           user_context,
-                                           user_context_length,
-                                           context,
-                                           context_length,
-                                           encrypted_message,
-                                           encrypted_message_length,
-                                           plain_message,
-                                           plain_message_length);
+    themis_status_t res = THEMIS_FAIL;
+
+    THEMIS_CHECK_PARAM(master_key != NULL);
+    THEMIS_CHECK_PARAM(master_key_length != 0);
+    THEMIS_CHECK_PARAM(encrypted_message != NULL);
+    THEMIS_CHECK_PARAM(encrypted_message_length != 0);
+    THEMIS_CHECK_PARAM(context != NULL);
+    THEMIS_CHECK_PARAM(context_length != 0);
+    THEMIS_CHECK_PARAM(plain_message_length != NULL);
+    /* user_context is optional for Token Protect mode */
+
+    res = themis_auth_sym_decrypt_message(master_key,
+                                          master_key_length,
+                                          user_context,
+                                          user_context_length,
+                                          context,
+                                          context_length,
+                                          encrypted_message,
+                                          encrypted_message_length,
+                                          plain_message,
+                                          plain_message_length);
+    return res;
 }
 
 themis_status_t themis_secure_cell_encrypt_context_imprint(const uint8_t* master_key,
@@ -156,14 +203,25 @@ themis_status_t themis_secure_cell_encrypt_context_imprint(const uint8_t* master
                                                            uint8_t* encrypted_message,
                                                            size_t* encrypted_message_length)
 {
-    return themis_sym_encrypt_message_u(master_key,
-                                        master_key_length,
-                                        context,
-                                        context_length,
-                                        message,
-                                        message_length,
-                                        encrypted_message,
-                                        encrypted_message_length);
+    themis_status_t res = THEMIS_FAIL;
+
+    THEMIS_CHECK_PARAM(master_key != NULL);
+    THEMIS_CHECK_PARAM(master_key_length != 0);
+    THEMIS_CHECK_PARAM(message != NULL);
+    THEMIS_CHECK_PARAM(message_length != 0);
+    THEMIS_CHECK_PARAM(context != NULL);
+    THEMIS_CHECK_PARAM(context_length != 0);
+    THEMIS_CHECK_PARAM(encrypted_message_length != NULL);
+
+    res = themis_sym_encrypt_message_u(master_key,
+                                       master_key_length,
+                                       context,
+                                       context_length,
+                                       message,
+                                       message_length,
+                                       encrypted_message,
+                                       encrypted_message_length);
+    return res;
 }
 
 themis_status_t themis_secure_cell_decrypt_context_imprint(const uint8_t* master_key,
@@ -175,12 +233,23 @@ themis_status_t themis_secure_cell_decrypt_context_imprint(const uint8_t* master
                                                            uint8_t* plain_message,
                                                            size_t* plain_message_length)
 {
-    return themis_sym_decrypt_message_u(master_key,
-                                        master_key_length,
-                                        context,
-                                        context_length,
-                                        encrypted_message,
-                                        encrypted_message_length,
-                                        plain_message,
-                                        plain_message_length);
+    themis_status_t res = THEMIS_FAIL;
+
+    THEMIS_CHECK_PARAM(master_key != NULL);
+    THEMIS_CHECK_PARAM(master_key_length != 0);
+    THEMIS_CHECK_PARAM(encrypted_message != NULL);
+    THEMIS_CHECK_PARAM(encrypted_message_length != 0);
+    THEMIS_CHECK_PARAM(context != NULL);
+    THEMIS_CHECK_PARAM(context_length != 0);
+    THEMIS_CHECK_PARAM(plain_message_length != NULL);
+
+    res = themis_sym_decrypt_message_u(master_key,
+                                       master_key_length,
+                                       context,
+                                       context_length,
+                                       encrypted_message,
+                                       encrypted_message_length,
+                                       plain_message,
+                                       plain_message_length);
+    return res;
 }
