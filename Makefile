@@ -417,6 +417,16 @@ get_version:
 
 for-audit: $(SOTER_AUD) $(THEMIS_AUD)
 
+changelog-check:
+	@echo "Pull requests not mentioned in CHANGELOG.md:"
+	@git log --reverse --oneline \
+	     $$(git describe --tags $$(git rev-list --tags --max-count=1)).. \
+	 | perl -n -e '/^[a-f0-9]* (.*) \(\#([0-9]*)\)$$/ && \
+	       print qq(https://github.com/cossacklabs/themis/pull/$$2 $$1\n)' \
+	 | while read url description; do \
+	       grep -q "$$url" CHANGELOG.md || echo "$$url $$description"; \
+	   done
+
 ########################################################################
 #
 # Common build rules
