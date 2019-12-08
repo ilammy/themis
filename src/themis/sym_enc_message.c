@@ -560,7 +560,7 @@ themis_status_t themis_auth_sym_decrypt_message(const uint8_t* key,
      * Workaround for compatibility with Themis 0.9.6 on 64-bit systems.
      */
 #ifdef SCELL_COMPAT
-    if (res != THEMIS_SUCCESS && res != THEMIS_BUFFER_TOO_SMALL && sizeof(size_t) == sizeof(uint64_t)) {
+    if (res != THEMIS_SUCCESS && res != THEMIS_BUFFER_TOO_SMALL) {
         res = themis_auth_sym_decrypt_message_compat(key,
                                                      key_length,
                                                      derived_key,
@@ -821,7 +821,7 @@ themis_status_t themis_sym_decrypt_message_u(const uint8_t* key,
      * Workaround for compatibility with Themis 0.9.6 on 64-bit systems.
      */
 #ifdef SCELL_COMPAT
-    if (res != THEMIS_SUCCESS && res != THEMIS_BUFFER_TOO_SMALL && sizeof(size_t) == sizeof(uint64_t)) {
+    if (res != THEMIS_SUCCESS && res != THEMIS_BUFFER_TOO_SMALL) {
         res = themis_sym_decrypt_message_u_compat(key,
                                                   key_length,
                                                   key_,
