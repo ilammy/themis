@@ -25,6 +25,21 @@
 #define THEMIS_SYM_KDF_KEY_LABEL "Themis secure cell message key"
 #define THEMIS_SYM_KDF_IV_LABEL "Themis secure cell message iv"
 
+#define THEMIS_SYM_KDF_CONTEXT_LENGTH sizeof(uint32_t)
+#define THEMIS_SYM_KDF_CONTEXT_LENGTH_COMPAT sizeof(uint64_t)
+
+static inline void put_kdf_context(size_t length, uint8_t context[THEMIS_SYM_KDF_CONTEXT_LENGTH])
+{
+    uint32_t length_u32 = length;
+    memcpy(context, &length_u32, sizeof(length_u32));
+}
+
+static inline void put_kdf_context_compat(size_t length, uint8_t context[THEMIS_SYM_KDF_CONTEXT_LENGTH_COMPAT])
+{
+    uint64_t length_u64 = length;
+    memcpy(context, &length_u64, sizeof(length_u64));
+}
+
 themis_status_t themis_sym_kdf(const uint8_t* master_key,
                                const size_t master_key_length,
                                const char* label,
@@ -259,6 +274,7 @@ themis_status_t themis_auth_sym_encrypt_message_(const uint8_t* key,
     uint8_t* iv = out_context + sizeof(themis_auth_sym_message_hdr_t);
     uint8_t* auth_tag = iv + THEMIS_AUTH_SYM_IV_LENGTH;
     size_t auth_tag_length = THEMIS_AUTH_SYM_AUTH_TAG_LENGTH;
+    uint8_t kdf_context[THEMIS_SYM_KDF_CONTEXT_LENGTH] = {0};
 
     *out_context_length = auth_sym_context_length;
     *encrypted_message_length = message_length;
@@ -270,11 +286,12 @@ themis_status_t themis_auth_sym_encrypt_message_(const uint8_t* key,
         return THEMIS_INVALID_PARAMETER;
     }
 
+    put_kdf_context(message_length, kdf_context);
     res = themis_sym_kdf(key,
                          key_length,
                          THEMIS_SYM_KDF_KEY_LABEL,
-                         (uint8_t*)(&message_length),
-                         sizeof(uint32_t),
+                         kdf_context,
+                         sizeof(kdf_context),
                          in_context,
                          in_context_length,
                          derived_key,
@@ -381,6 +398,7 @@ themis_status_t themis_auth_sym_decrypt_message_(const uint8_t* key,
     themis_auth_sym_message_hdr_t* hdr = (themis_auth_sym_message_hdr_t*)context;
     const uint8_t* iv = context + sizeof(themis_auth_sym_message_hdr_t);
     const uint8_t* auth_tag = iv + hdr->iv_length;
+    uint8_t kdf_context[THEMIS_SYM_KDF_CONTEXT_LENGTH] = {0};
 
     UNUSED(context_length);
 
@@ -393,11 +411,12 @@ themis_status_t themis_auth_sym_decrypt_message_(const uint8_t* key,
         return THEMIS_INVALID_PARAMETER;
     }
 
+    put_kdf_context(encrypted_message_length, kdf_context);
     res = themis_sym_kdf(key,
                          key_length,
                          THEMIS_SYM_KDF_KEY_LABEL,
-                         (uint8_t*)(&encrypted_message_length),
-                         sizeof(uint32_t),
+                         kdf_context,
+                         sizeof(kdf_context),
                          in_context,
                          in_context_length,
                          derived_key,
@@ -445,6 +464,7 @@ themis_status_t themis_auth_sym_decrypt_message_compat(const uint8_t* key,
     themis_auth_sym_message_hdr_t* hdr = (themis_auth_sym_message_hdr_t*)context;
     const uint8_t* iv = context + sizeof(themis_auth_sym_message_hdr_t);
     const uint8_t* auth_tag = iv + hdr->iv_length;
+    uint8_t kdf_context[THEMIS_SYM_KDF_CONTEXT_LENGTH_COMPAT] = {0};
 
     UNUSED(context_length);
 
@@ -453,11 +473,12 @@ themis_status_t themis_auth_sym_decrypt_message_compat(const uint8_t* key,
     /*
      * Note that we use sizeof(uint64_t) here as that's the size used by buggy Themis 0.9.6.
      */
+    put_kdf_context_compat(encrypted_message_length, kdf_context);
     res = themis_sym_kdf(key,
                          key_length,
                          THEMIS_SYM_KDF_KEY_LABEL,
-                         (uint8_t*)(&encrypted_message_length),
-                         sizeof(uint64_t),
+                         kdf_context,
+                         sizeof(kdf_context),
                          in_context,
                          in_context_length,
                          derived_key,
@@ -628,14 +649,14 @@ themis_status_t themis_sym_encrypt_message_u(const uint8_t* key,
 {
     themis_status_t res = THEMIS_FAIL;
     uint8_t key_[THEMIS_SYM_KEY_LENGTH / 8] = {0};
+    uint8_t kdf_context[THEMIS_SYM_KDF_CONTEXT_LENGTH] = {0};
 
-    // TODO: TYPE WARNING Should update `sizeof(uint32_t)` to `sizeof(message_length)` after
-    // changing encrypted_message_length type to uint32_t
+    put_kdf_context(message_length, kdf_context);
     res = themis_sym_kdf(key,
                          key_length,
                          THEMIS_SYM_KDF_KEY_LABEL,
-                         (uint8_t*)(&message_length),
-                         sizeof(uint32_t),
+                         kdf_context,
+                         sizeof(kdf_context),
                          NULL,
                          0,
                          key_,
@@ -724,15 +745,17 @@ themis_status_t themis_sym_decrypt_message_u_compat(const uint8_t* key,
                                                     size_t* message_length)
 {
     themis_status_t res = THEMIS_FAIL;
+    uint8_t kdf_context[THEMIS_SYM_KDF_CONTEXT_LENGTH_COMPAT] = {0};
 
     /*
      * Note that we use sizeof(uint64_t) here as that's the size used by buggy Themis 0.9.6.
      */
+    put_kdf_context_compat(encrypted_message_length, kdf_context);
     res = themis_sym_kdf(key,
                          key_length,
                          THEMIS_SYM_KDF_KEY_LABEL,
-                         (uint8_t*)(&encrypted_message_length),
-                         sizeof(uint64_t),
+                         kdf_context,
+                         sizeof(kdf_context),
                          NULL,
                          0,
                          derived_key,
@@ -769,14 +792,14 @@ themis_status_t themis_sym_decrypt_message_u(const uint8_t* key,
 {
     themis_status_t res = THEMIS_FAIL;
     uint8_t key_[THEMIS_SYM_KEY_LENGTH / 8] = {0};
+    uint8_t kdf_context[THEMIS_SYM_KDF_CONTEXT_LENGTH] = {0};
 
-    // TODO: TYPE WARNING Should update `sizeof(uint32_t)` to `sizeof(encrypted_message_length)`
-    // after changing encrypted_message_length type to uint32_t
+    put_kdf_context(encrypted_message_length, kdf_context);
     res = themis_sym_kdf(key,
                          key_length,
                          THEMIS_SYM_KDF_KEY_LABEL,
-                         (uint8_t*)(&encrypted_message_length),
-                         sizeof(uint32_t),
+                         kdf_context,
+                         sizeof(kdf_context),
                          NULL,
                          0,
                          key_,
