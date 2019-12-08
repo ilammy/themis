@@ -64,22 +64,35 @@ themis_status_t themis_auth_sym_plain_encrypt(uint32_t alg,
                                               uint8_t* auth_tag,
                                               size_t* auth_tag_length)
 {
-    soter_sym_ctx_t* ctx = soter_sym_aead_encrypt_create(alg, key, key_length, NULL, 0, iv, iv_length);
-    THEMIS_CHECK(ctx != NULL);
-    if (aad != NULL || aad_length != 0) {
-        THEMIS_CHECK__(soter_sym_aead_encrypt_aad(ctx, aad, aad_length) == THEMIS_SUCCESS,
-                       soter_sym_aead_encrypt_destroy(ctx);
-                       return THEMIS_FAIL);
+    themis_status_t res = THEMIS_FAIL;
+    soter_sym_ctx_t* ctx = NULL;
+
+    ctx = soter_sym_aead_encrypt_create(alg, key, key_length, NULL, 0, iv, iv_length);
+    if (!ctx) {
+        return THEMIS_FAIL;
     }
-    THEMIS_CHECK__(soter_sym_aead_encrypt_update(ctx, message, message_length, encrypted_message, encrypted_message_length)
-                       == THEMIS_SUCCESS,
-                   soter_sym_aead_encrypt_destroy(ctx);
-                   return THEMIS_FAIL);
-    THEMIS_CHECK__(soter_sym_aead_encrypt_final(ctx, auth_tag, auth_tag_length) == THEMIS_SUCCESS,
-                   soter_sym_aead_encrypt_destroy(ctx);
-                   return THEMIS_FAIL);
+
+    if (aad != NULL || aad_length != 0) {
+        res = soter_sym_aead_encrypt_aad(ctx, aad, aad_length);
+        if (res != THEMIS_SUCCESS) {
+            goto error;
+        }
+    }
+
+    res = soter_sym_aead_encrypt_update(ctx, message, message_length, encrypted_message, encrypted_message_length);
+    if (res != THEMIS_SUCCESS) {
+        goto error;
+    }
+
+    res = soter_sym_aead_encrypt_final(ctx, auth_tag, auth_tag_length);
+    if (res != THEMIS_SUCCESS) {
+        goto error;
+    }
+
+error:
     soter_sym_aead_encrypt_destroy(ctx);
-    return THEMIS_SUCCESS;
+
+    return res;
 }
 
 themis_status_t themis_auth_sym_plain_decrypt(uint32_t alg,
@@ -96,22 +109,35 @@ themis_status_t themis_auth_sym_plain_decrypt(uint32_t alg,
                                               const uint8_t* auth_tag,
                                               const size_t auth_tag_length)
 {
-    soter_sym_ctx_t* ctx = soter_sym_aead_decrypt_create(alg, key, key_length, NULL, 0, iv, iv_length);
-    THEMIS_CHECK(ctx != NULL)
-    if (aad != NULL || aad_length != 0) {
-        THEMIS_CHECK__(soter_sym_aead_decrypt_aad(ctx, aad, aad_length) == THEMIS_SUCCESS,
-                       soter_sym_aead_decrypt_destroy(ctx);
-                       return THEMIS_FAIL);
+    themis_status_t res = THEMIS_FAIL;
+    soter_sym_ctx_t* ctx = NULL;
+
+    ctx = soter_sym_aead_decrypt_create(alg, key, key_length, NULL, 0, iv, iv_length);
+    if (!ctx) {
+        return THEMIS_FAIL;
     }
-    THEMIS_CHECK__(soter_sym_aead_decrypt_update(ctx, encrypted_message, encrypted_message_length, message, message_length)
-                       == THEMIS_SUCCESS,
-                   soter_sym_aead_decrypt_destroy(ctx);
-                   return THEMIS_FAIL);
-    THEMIS_CHECK__(soter_sym_aead_decrypt_final(ctx, auth_tag, auth_tag_length) == THEMIS_SUCCESS,
-                   soter_sym_aead_decrypt_destroy(ctx);
-                   return THEMIS_FAIL);
-    soter_sym_aead_decrypt_destroy(ctx);
-    return THEMIS_SUCCESS;
+
+    if (aad != NULL || aad_length != 0) {
+        res = soter_sym_aead_decrypt_aad(ctx, aad, aad_length);
+        if (res != THEMIS_SUCCESS) {
+            goto error;
+        }
+    }
+
+    res = soter_sym_aead_decrypt_update(ctx, encrypted_message, encrypted_message_length, message, message_length);
+    if (res != THEMIS_SUCCESS) {
+        goto error;
+    }
+
+    res = soter_sym_aead_decrypt_final(ctx, auth_tag, auth_tag_length);
+    if (res != THEMIS_SUCCESS) {
+        goto error;
+    }
+
+error:
+    soter_sym_aead_encrypt_destroy(ctx);
+
+    return res;
 }
 
 themis_status_t themis_sym_plain_encrypt(uint32_t alg,
