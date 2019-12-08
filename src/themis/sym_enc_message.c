@@ -711,6 +711,53 @@ error:
     return res;
 }
 
+#ifdef SCELL_COMPAT
+themis_status_t themis_sym_decrypt_message_u_compat(const uint8_t* key,
+                                                    size_t key_length,
+                                                    uint8_t* derived_key,
+                                                    size_t derived_key_length,
+                                                    const uint8_t* context,
+                                                    size_t context_length,
+                                                    const uint8_t* encrypted_message,
+                                                    size_t encrypted_message_length,
+                                                    uint8_t* message,
+                                                    size_t* message_length)
+{
+    themis_status_t res = THEMIS_FAIL;
+
+    /*
+     * Note that we use sizeof(uint64_t) here as that's the size used by buggy Themis 0.9.6.
+     */
+    res = themis_sym_kdf(key,
+                         key_length,
+                         THEMIS_SYM_KDF_KEY_LABEL,
+                         (uint8_t*)(&encrypted_message_length),
+                         sizeof(uint64_t),
+                         NULL,
+                         0,
+                         derived_key,
+                         derived_key_length);
+    if (res != THEMIS_SUCCESS) {
+        goto error;
+    }
+
+    res = themis_sym_decrypt_message_u_(derived_key,
+                                        derived_key_length,
+                                        context,
+                                        context_length,
+                                        encrypted_message,
+                                        encrypted_message_length,
+                                        message,
+                                        message_length);
+    if (res != THEMIS_SUCCESS) {
+        goto error;
+    }
+
+error:
+    return res;
+}
+#endif
+
 themis_status_t themis_sym_decrypt_message_u(const uint8_t* key,
                                              const size_t key_length,
                                              const uint8_t* context,
@@ -752,28 +799,16 @@ themis_status_t themis_sym_decrypt_message_u(const uint8_t* key,
      */
 #ifdef SCELL_COMPAT
     if (res != THEMIS_SUCCESS && res != THEMIS_BUFFER_TOO_SMALL && sizeof(size_t) == sizeof(uint64_t)) {
-        // TODO: TYPE WARNING `sizeof(uint64_t)`. Fix that on next versions
-        res = themis_sym_kdf(key,
-                             key_length,
-                             THEMIS_SYM_KDF_KEY_LABEL,
-                             (uint8_t*)(&encrypted_message_length),
-                             sizeof(uint64_t),
-                             NULL,
-                             0,
-                             key_,
-                             sizeof(key_));
-        if (res != THEMIS_SUCCESS) {
-            goto error;
-        }
-
-        res = themis_sym_decrypt_message_u_(key_,
-                                            sizeof(key_),
-                                            context,
-                                            context_length,
-                                            encrypted_message,
-                                            encrypted_message_length,
-                                            message,
-                                            message_length);
+        res = themis_sym_decrypt_message_u_compat(key,
+                                                  key_length,
+                                                  key_,
+                                                  sizeof(key_),
+                                                  context,
+                                                  context_length,
+                                                  encrypted_message,
+                                                  encrypted_message_length,
+                                                  message,
+                                                  message_length);
     }
 #endif
 
