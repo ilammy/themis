@@ -629,7 +629,7 @@ themis_status_t themis_sym_encrypt_message_u(const uint8_t* key,
                                              size_t* encrypted_message_length)
 {
     themis_status_t res = THEMIS_FAIL;
-    uint8_t key_[THEMIS_SYM_KEY_LENGTH / 8] = {0};
+    uint8_t derived_key[THEMIS_SYM_KEY_LENGTH / 8] = {0};
 
     // TODO: TYPE WARNING Should update `sizeof(uint32_t)` to `sizeof(message_length)` after
     // changing encrypted_message_length type to uint32_t
@@ -640,14 +640,14 @@ themis_status_t themis_sym_encrypt_message_u(const uint8_t* key,
                          sizeof(uint32_t),
                          NULL,
                          0,
-                         key_,
-                         sizeof(key_));
+                         derived_key,
+                         sizeof(derived_key));
     if (res != THEMIS_SUCCESS) {
         goto error;
     }
 
-    res = themis_sym_encrypt_message_u_(key_,
-                                        sizeof(key_),
+    res = themis_sym_encrypt_message_u_(derived_key,
+                                        sizeof(derived_key),
                                         message,
                                         message_length,
                                         context,
@@ -727,7 +727,7 @@ themis_status_t themis_sym_decrypt_message_u(const uint8_t* key,
                                              size_t* message_length)
 {
     themis_status_t res = THEMIS_FAIL;
-    uint8_t key_[THEMIS_SYM_KEY_LENGTH / 8] = {0};
+    uint8_t derived_key[THEMIS_SYM_KEY_LENGTH / 8] = {0};
 
     // TODO: TYPE WARNING Should update `sizeof(uint32_t)` to `sizeof(encrypted_message_length)`
     // after changing encrypted_message_length type to uint32_t
@@ -738,14 +738,14 @@ themis_status_t themis_sym_decrypt_message_u(const uint8_t* key,
                          sizeof(uint32_t),
                          NULL,
                          0,
-                         key_,
-                         sizeof(key_));
+                         derived_key,
+                         sizeof(derived_key));
     if (res != THEMIS_SUCCESS) {
         goto error;
     }
 
-    res = themis_sym_decrypt_message_u_(key_,
-                                        sizeof(key_),
+    res = themis_sym_decrypt_message_u_(derived_key,
+                                        sizeof(derived_key),
                                         context,
                                         context_length,
                                         encrypted_message,
@@ -766,14 +766,14 @@ themis_status_t themis_sym_decrypt_message_u(const uint8_t* key,
                              sizeof(uint64_t),
                              NULL,
                              0,
-                             key_,
-                             sizeof(key_));
+                             derived_key,
+                             sizeof(derived_key));
         if (res != THEMIS_SUCCESS) {
             goto error;
         }
 
-        res = themis_sym_decrypt_message_u_(key_,
-                                            sizeof(key_),
+        res = themis_sym_decrypt_message_u_(derived_key,
+                                            sizeof(derived_key),
                                             context,
                                             context_length,
                                             encrypted_message,
