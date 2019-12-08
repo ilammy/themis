@@ -16,6 +16,8 @@
 
 #include "themis/secure_cell.h"
 
+#include "soter/soter_wipe.h"
+
 #include "themis/sym_enc_message.h"
 
 themis_status_t themis_secure_cell_encrypt_seal(const uint8_t* master_key,
@@ -70,6 +72,11 @@ themis_status_t themis_secure_cell_encrypt_seal(const uint8_t* master_key,
                                           &ctx_length_,
                                           encrypted_message + ctx_length_,
                                           &msg_length_);
+
+    if (res != THEMIS_SUCCESS && res != THEMIS_BUFFER_TOO_SMALL) {
+        soter_wipe(encrypted_message, *encrypted_message_length);
+    }
+
     return res;
 }
 
@@ -122,6 +129,11 @@ themis_status_t themis_secure_cell_decrypt_seal(const uint8_t* master_key,
                                           msg_length_,
                                           plain_message,
                                           plain_message_length);
+
+    if (res != THEMIS_SUCCESS && res != THEMIS_BUFFER_TOO_SMALL) {
+        soter_wipe(plain_message, *plain_message_length);
+    }
+
     return res;
 }
 
@@ -156,6 +168,12 @@ themis_status_t themis_secure_cell_encrypt_token_protect(const uint8_t* master_k
                                           context_length,
                                           encrypted_message,
                                           encrypted_message_length);
+
+    if (res != THEMIS_SUCCESS && res != THEMIS_BUFFER_TOO_SMALL) {
+        soter_wipe(context, *context_length);
+        soter_wipe(encrypted_message, *encrypted_message_length);
+    }
+
     return res;
 }
 
@@ -191,6 +209,11 @@ themis_status_t themis_secure_cell_decrypt_token_protect(const uint8_t* master_k
                                           encrypted_message_length,
                                           plain_message,
                                           plain_message_length);
+
+    if (res != THEMIS_SUCCESS && res != THEMIS_BUFFER_TOO_SMALL) {
+        soter_wipe(plain_message, *plain_message_length);
+    }
+
     return res;
 }
 
@@ -221,6 +244,11 @@ themis_status_t themis_secure_cell_encrypt_context_imprint(const uint8_t* master
                                        message_length,
                                        encrypted_message,
                                        encrypted_message_length);
+
+    if (res != THEMIS_SUCCESS && res != THEMIS_BUFFER_TOO_SMALL) {
+        soter_wipe(encrypted_message, *encrypted_message_length);
+    }
+
     return res;
 }
 
@@ -251,5 +279,10 @@ themis_status_t themis_secure_cell_decrypt_context_imprint(const uint8_t* master
                                        encrypted_message_length,
                                        plain_message,
                                        plain_message_length);
+
+    if (res != THEMIS_SUCCESS && res != THEMIS_BUFFER_TOO_SMALL) {
+        soter_wipe(plain_message, *plain_message_length);
+    }
+
     return res;
 }
