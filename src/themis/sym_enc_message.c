@@ -614,6 +614,8 @@ themis_status_t themis_sym_encrypt_message_u_(const uint8_t* key,
     }
 
 error:
+    soter_wipe(iv, sizeof(iv));
+
     return res;
 }
 
@@ -657,6 +659,8 @@ themis_status_t themis_sym_encrypt_message_u(const uint8_t* key,
     }
 
 error:
+    soter_wipe(key_, sizeof(key_));
+
     return res;
 }
 
@@ -708,6 +712,8 @@ themis_status_t themis_sym_decrypt_message_u_(const uint8_t* key,
     }
 
 error:
+    soter_wipe(iv, sizeof(iv));
+
     return res;
 }
 
@@ -778,5 +784,7 @@ themis_status_t themis_sym_decrypt_message_u(const uint8_t* key,
 #endif
 
 error:
+    soter_wipe(key_, sizeof(key_));
+
     return res;
 }
