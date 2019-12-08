@@ -150,23 +150,39 @@ themis_status_t themis_sym_plain_encrypt(uint32_t alg,
                                          uint8_t* encrypted_message,
                                          size_t* encrypted_message_length)
 {
-    soter_sym_ctx_t* ctx = soter_sym_encrypt_create(alg, key, key_length, NULL, 0, iv, iv_length);
-    THEMIS_CHECK__(ctx, return THEMIS_NO_MEMORY);
-    size_t add_length = (*encrypted_message_length);
-    themis_status_t res = soter_sym_encrypt_update(ctx,
-                                                   message,
-                                                   message_length,
-                                                   encrypted_message,
-                                                   encrypted_message_length);
-    THEMIS_CHECK__(THEMIS_SUCCESS == res, soter_sym_encrypt_destroy(ctx); return res);
-    add_length -= (*encrypted_message_length);
-    res = soter_sym_encrypt_final(ctx, encrypted_message + (*encrypted_message_length), &add_length);
-    THEMIS_CHECK__(res == THEMIS_SUCCESS, soter_sym_encrypt_destroy(ctx);
-                   (*encrypted_message_length) += add_length;
-                   return res);
-    (*encrypted_message_length) += add_length;
+    themis_status_t res = THEMIS_FAIL;
+    soter_sym_ctx_t* ctx = NULL;
+    size_t add_length = 0;
+
+    ctx = soter_sym_encrypt_create(alg, key, key_length, NULL, 0, iv, iv_length);
+    if (!ctx) {
+        return THEMIS_FAIL;
+    }
+
+    add_length = *encrypted_message_length;
+    res = soter_sym_encrypt_update(ctx,
+                                   message,
+                                   message_length,
+                                   encrypted_message,
+                                   encrypted_message_length);
+    if (res != THEMIS_SUCCESS) {
+        goto error;
+    }
+
+    /*
+     * Authentication tag is appended to encrypted_message.
+     */
+    add_length -= *encrypted_message_length;
+    res = soter_sym_encrypt_final(ctx, encrypted_message + *encrypted_message_length, &add_length);
+    *encrypted_message_length += add_length;
+    if (res != THEMIS_SUCCESS) {
+        goto error;
+    }
+
+error:
     soter_sym_encrypt_destroy(ctx);
-    return THEMIS_SUCCESS;
+
+    return res;
 }
 
 themis_status_t themis_sym_plain_decrypt(uint32_t alg,
@@ -179,23 +195,39 @@ themis_status_t themis_sym_plain_decrypt(uint32_t alg,
                                          uint8_t* message,
                                          size_t* message_length)
 {
-    soter_sym_ctx_t* ctx = soter_sym_decrypt_create(alg, key, key_length, NULL, 0, iv, iv_length);
-    THEMIS_CHECK(ctx != NULL);
-    size_t add_length = (*message_length);
-    themis_status_t res = soter_sym_decrypt_update(ctx,
-                                                   encrypted_message,
-                                                   encrypted_message_length,
-                                                   message,
-                                                   message_length);
-    THEMIS_CHECK__(THEMIS_SUCCESS == res, soter_sym_decrypt_destroy(ctx); return res);
-    add_length -= (*message_length);
-    res = soter_sym_decrypt_final(ctx, message + (*message_length), &add_length);
-    THEMIS_CHECK__(res == THEMIS_SUCCESS, soter_sym_decrypt_destroy(ctx);
-                   (*message_length) += add_length;
-                   return res);
-    (*message_length) += add_length;
+    themis_status_t res = THEMIS_FAIL;
+    soter_sym_ctx_t* ctx = NULL;
+    size_t add_length = 0;
+
+    ctx = soter_sym_decrypt_create(alg, key, key_length, NULL, 0, iv, iv_length);
+    if (!ctx) {
+        return THEMIS_FAIL;
+    }
+
+    add_length = *message_length;
+    res = soter_sym_decrypt_update(ctx,
+                                   encrypted_message,
+                                   encrypted_message_length,
+                                   message,
+                                   message_length);
+    if (res != THEMIS_SUCCESS) {
+        goto error;
+    }
+
+    /*
+     * Authentication tag is appended to message.
+     */
+    add_length -= *message_length;
+    res = soter_sym_decrypt_final(ctx, message + *message_length, &add_length);
+    *message_length += add_length;
+    if (res != THEMIS_SUCCESS) {
+        goto error;
+    }
+
+error:
     soter_sym_decrypt_destroy(ctx);
-    return THEMIS_SUCCESS;
+
+    return res;
 }
 
 typedef struct themis_auth_sym_message_hdr_type {
