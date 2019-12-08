@@ -446,7 +446,6 @@ error:
     return res;
 }
 
-#ifdef SCELL_COMPAT
 themis_status_t themis_auth_sym_decrypt_message_compat(const uint8_t* key,
                                                        const size_t key_length,
                                                        uint8_t* derived_key,
@@ -507,7 +506,6 @@ themis_status_t themis_auth_sym_decrypt_message_compat(const uint8_t* key,
 error:
     return res;
 }
-#endif
 
 themis_status_t themis_auth_sym_decrypt_message(const uint8_t* key,
                                                 const size_t key_length,
@@ -559,7 +557,6 @@ themis_status_t themis_auth_sym_decrypt_message(const uint8_t* key,
     /*
      * Workaround for compatibility with Themis 0.9.6 on 64-bit systems.
      */
-#ifdef SCELL_COMPAT
     if (res != THEMIS_SUCCESS && res != THEMIS_BUFFER_TOO_SMALL) {
         res = themis_auth_sym_decrypt_message_compat(key,
                                                      key_length,
@@ -574,7 +571,6 @@ themis_status_t themis_auth_sym_decrypt_message(const uint8_t* key,
                                                      message,
                                                      message_length);
     }
-#endif
 
     soter_wipe(derived_key, sizeof(derived_key));
 
@@ -732,7 +728,6 @@ error:
     return res;
 }
 
-#ifdef SCELL_COMPAT
 themis_status_t themis_sym_decrypt_message_u_compat(const uint8_t* key,
                                                     size_t key_length,
                                                     uint8_t* derived_key,
@@ -779,7 +774,6 @@ themis_status_t themis_sym_decrypt_message_u_compat(const uint8_t* key,
 error:
     return res;
 }
-#endif
 
 themis_status_t themis_sym_decrypt_message_u(const uint8_t* key,
                                              const size_t key_length,
@@ -820,7 +814,6 @@ themis_status_t themis_sym_decrypt_message_u(const uint8_t* key,
     /*
      * Workaround for compatibility with Themis 0.9.6 on 64-bit systems.
      */
-#ifdef SCELL_COMPAT
     if (res != THEMIS_SUCCESS && res != THEMIS_BUFFER_TOO_SMALL) {
         res = themis_sym_decrypt_message_u_compat(key,
                                                   key_length,
@@ -833,7 +826,6 @@ themis_status_t themis_sym_decrypt_message_u(const uint8_t* key,
                                                   message,
                                                   message_length);
     }
-#endif
 
 error:
     return res;
