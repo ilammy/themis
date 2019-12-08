@@ -35,18 +35,19 @@ themis_status_t themis_sym_kdf(const uint8_t* master_key,
                                uint8_t* key,
                                size_t key_length)
 {
+    soter_kdf_context_buf_t ctx[2] = {{context, context_length}, {context2, context2_length}};
+    size_t ctx_count = (context2 == NULL || context2_length == 0) ? 1 : 2;
+
     THEMIS_CHECK_PARAM(master_key != NULL && master_key_length != 0);
     THEMIS_CHECK_PARAM(context != NULL && context_length != 0);
-    soter_kdf_context_buf_t ctx[2] = {{context, context_length}, {context2, context2_length}};
-    THEMIS_CHECK(soter_kdf(master_key,
-                           master_key_length,
-                           label,
-                           ctx,
-                           (context2 == NULL || context2_length == 0) ? 1 : 2,
-                           key,
-                           key_length)
-                 == THEMIS_SUCCESS);
-    return THEMIS_SUCCESS;
+
+    return soter_kdf(master_key,
+                     master_key_length,
+                     label,
+                     ctx,
+                     ctx_count,
+                     key,
+                     key_length);
 }
 
 themis_status_t themis_auth_sym_plain_encrypt(uint32_t alg,
