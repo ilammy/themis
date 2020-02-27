@@ -30,3 +30,24 @@ func SanitizeBuffer(data []byte) []byte {
 	copy(d, data)
 	return d
 }
+
+// In Go 1.11 and earlier we need to make a copy for unsafe.Pointer()
+// to work correctly with CGo. Since SafeBuffer may be used for sensitive
+// data, we take care to zero out our copy when it's no longer needed.
+
+func (buffer *SafeBuffer) maybeCopy(bytes []byte) {
+	if bytes == nil {
+		buffer.bytes = nil
+	} else {
+		buffer.bytes = make([]byte, len(bytes))
+		copy(buffer.bytes, bytes)
+	}
+}
+
+func (buffer *SafeBuffer) maybeFillZero() {
+	// Go memory model does not provide any guarantees when this write
+	// will be visible, so it's best-effort attempt at safe zeroing.
+	for i := range buffer.bytes {
+		buffer.bytes[i] = 0
+	}
+}

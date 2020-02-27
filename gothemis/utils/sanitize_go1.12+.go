@@ -25,3 +25,12 @@ func SanitizeBuffer(data []byte) []byte {
 	// Since Go 1.12 we can just return the data.
 	return data
 }
+
+// Since Go 1.12 these operations simply store the reference to the given slice.
+// The slice may be given to us by the user code so we don't touch it.
+
+func (buffer *SafeBuffer) maybeCopy(bytes []byte) {
+	buffer.bytes = bytes
+}
+
+func (buffer *SafeBuffer) maybeFillZero() {}
