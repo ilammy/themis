@@ -126,8 +126,6 @@ static bool decrypt(const void *key, size_t key_len, const void *prot, size_t pr
 */
 import "C"
 import (
-	"unsafe"
-
 	"github.com/cossacklabs/themis/gothemis/errors"
 	"github.com/cossacklabs/themis/gothemis/utils"
 )
@@ -157,7 +155,7 @@ type SecureCell struct {
 
 // New makes a new Secure Cell with master key and specified mode.
 func New(key []byte, mode int) *SecureCell {
-	return &SecureCell{utils.SanitizeBuffer(key), mode}
+	return &SecureCell{key, mode}
 }
 
 func missing(data []byte) bool {
@@ -173,66 +171,61 @@ func (sc *SecureCell) Protect(data []byte, context []byte) ([]byte, []byte, erro
 	if missing(sc.key) {
 		return nil, nil, errors.New("Master key was not provided")
 	}
+	safeKey := utils.WrapBuffer(sc.key)
+	defer safeKey.Close()
 
 	if missing(data) {
 		return nil, nil, errors.New("Data was not provided")
 	}
+	safeData := utils.WrapBuffer(data)
+	defer safeData.Close()
 
 	if ModeContextImprint == sc.mode {
 		if missing(context) {
 			return nil, nil, errors.New("Context is mandatory for context imprint mode")
 		}
 	}
-
-	data = utils.SanitizeBuffer(data)
-	context = utils.SanitizeBuffer(context)
-
-	var ctx unsafe.Pointer
-	var ctxLen C.size_t
-
-	if !missing(context) {
-		ctx = unsafe.Pointer(&context[0])
-		ctxLen = C.size_t(len(context))
-	}
+	safeContext := utils.WrapBuffer(context)
+	defer safeContext.Close()
 
 	var encLen, addLen C.size_t
 
-	if !bool(C.get_protect_size(unsafe.Pointer(&sc.key[0]),
-		C.size_t(len(sc.key)),
-		unsafe.Pointer(&data[0]),
-		C.size_t(len(data)),
-		ctx,
-		ctxLen,
+	if !bool(C.get_protect_size(safeKey.Pointer(),
+		C.size_t(safeKey.Length()),
+		safeData.Pointer(),
+		C.size_t(safeData.Length()),
+		safeContext.Pointer(),
+		C.size_t(safeContext.Length()),
 		C.int(sc.mode),
 		&encLen,
 		&addLen)) {
 		return nil, nil, errors.New("Failed to get output size")
 	}
 
-	var addData []byte
-	var add unsafe.Pointer
-
-	encData := make([]byte, encLen, encLen)
+	encrypted := utils.WrapBuffer(make([]byte, encLen))
+	defer encrypted.Close()
+	var token []byte
 	if addLen > 0 {
-		addData = make([]byte, addLen, addLen)
-		add = unsafe.Pointer(&addData[0])
+		token = make([]byte, addLen)
 	}
+	authToken := utils.WrapBuffer(token)
+	defer authToken.Close()
 
-	if !bool(C.encrypt(unsafe.Pointer(&sc.key[0]),
-		C.size_t(len(sc.key)),
-		unsafe.Pointer(&data[0]),
-		C.size_t(len(data)),
-		ctx,
-		ctxLen,
+	if !bool(C.encrypt(safeKey.Pointer(),
+		C.size_t(safeKey.Length()),
+		safeData.Pointer(),
+		C.size_t(safeData.Length()),
+		safeContext.Pointer(),
+		C.size_t(safeContext.Length()),
 		C.int(sc.mode),
-		unsafe.Pointer(&encData[0]),
-		encLen,
-		add,
-		addLen)) {
+		encrypted.Pointer(),
+		C.size_t(encrypted.Length()),
+		authToken.Pointer(),
+		C.size_t(authToken.Length()))) {
 		return nil, nil, errors.New("Failed to protect data")
 	}
 
-	return encData, addData, nil
+	return encrypted.Take(), authToken.Take(), nil
 }
 
 // Unprotect decrypts or verify data with optional user context (depending on the Cell mode).
@@ -244,68 +237,61 @@ func (sc *SecureCell) Unprotect(protectedData []byte, additionalData []byte, con
 	if missing(sc.key) {
 		return nil, errors.New("Master key was not provided")
 	}
+	safeKey := utils.WrapBuffer(sc.key)
+	defer safeKey.Close()
 
 	if missing(protectedData) {
 		return nil, errors.New("Data was not provided")
 	}
+	safeData := utils.WrapBuffer(protectedData)
+	defer safeData.Close()
 
 	if ModeContextImprint == sc.mode {
 		if missing(context) {
 			return nil, errors.New("Context is mandatory for context imprint mode")
 		}
 	}
+	safeContext := utils.WrapBuffer(context)
+	defer safeContext.Close()
 
 	if ModeTokenProtect == sc.mode {
 		if missing(additionalData) {
 			return nil, errors.New("Additional data is mandatory for token protect mode")
 		}
 	}
-
-	protectedData = utils.SanitizeBuffer(protectedData)
-	additionalData = utils.SanitizeBuffer(additionalData)
-	context = utils.SanitizeBuffer(context)
-
-	var add, ctx unsafe.Pointer = nil, nil
-	var addLen, ctxLen C.size_t = 0, 0
-
-	if !missing(additionalData) {
-		add = unsafe.Pointer(&additionalData[0])
-		addLen = C.size_t(len(additionalData))
-	}
-
-	if !missing(context) {
-		ctx = unsafe.Pointer(&context[0])
-		ctxLen = C.size_t(len(context))
-	}
+	safeToken := utils.WrapBuffer(additionalData)
+	defer safeToken.Close()
 
 	var decLen C.size_t
-	if !bool(C.get_unprotect_size(unsafe.Pointer(&sc.key[0]),
-		C.size_t(len(sc.key)),
-		unsafe.Pointer(&protectedData[0]),
-		C.size_t(len(protectedData)),
-		add,
-		addLen,
-		ctx,
-		ctxLen,
+	if !bool(C.get_unprotect_size(safeKey.Pointer(),
+		C.size_t(safeKey.Length()),
+		safeData.Pointer(),
+		C.size_t(safeData.Length()),
+		safeToken.Pointer(),
+		C.size_t(safeToken.Length()),
+		safeContext.Pointer(),
+		C.size_t(safeContext.Length()),
 		C.int(sc.mode),
 		&decLen)) {
 		return nil, errors.New("Failed to get output size")
 	}
 
-	decData := make([]byte, decLen, decLen)
-	if !bool(C.decrypt(unsafe.Pointer(&sc.key[0]),
-		C.size_t(len(sc.key)),
-		unsafe.Pointer(&protectedData[0]),
-		C.size_t(len(protectedData)),
-		add,
-		addLen,
-		ctx,
-		ctxLen,
+	decrypted := utils.WrapBuffer(make([]byte, decLen))
+	defer decrypted.Close()
+
+	if !bool(C.decrypt(safeKey.Pointer(),
+		C.size_t(safeKey.Length()),
+		safeData.Pointer(),
+		C.size_t(safeData.Length()),
+		safeToken.Pointer(),
+		C.size_t(safeToken.Length()),
+		safeContext.Pointer(),
+		C.size_t(safeContext.Length()),
 		C.int(sc.mode),
-		unsafe.Pointer(&decData[0]),
-		decLen)) {
+		decrypted.Pointer(),
+		C.size_t(decrypted.Length()))) {
 		return nil, errors.New("Failed to unprotect data")
 	}
 
-	return decData, nil
+	return decrypted.Take(), nil
 }
