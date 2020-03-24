@@ -62,6 +62,14 @@ jobs:
       - name: Hack dependencies
         if: contains(env.HACK_DEPENDENCIES, 'true')
         run: |
+          # When building pull requests GitHub uses an internal ref in the
+          # *base repo*, making it inaccessible to dumb tools. Update the
+          # variables to point to head, not the result of merge with base.
+          if [[ "$GITHUB_EVENT_NAME" = "pull_request" ]]
+          then
+            export GITHUB_REPOSITORY=$(jq -r .pull_request.head.repo.full_name "$GITHUB_EVENT_PATH")
+            export GITHUB_SHA=$(jq -r .pull_request.head.sha "$GITHUB_EVENT_PATH")
+          fi
           # CocoaPods
           find tests/objcthemis -type f -name Podfile.lock -delete
           find tests/objcthemis -type f -name Podfile -print0 | xargs -0 \
@@ -170,6 +178,14 @@ jobs:
       - name: Hack dependencies
         if: contains(env.HACK_DEPENDENCIES, 'true')
         run: |
+          # When building pull requests GitHub uses an internal ref in the
+          # *base repo*, making it inaccessible to dumb tools. Update the
+          # variables to point to head, not the result of merge with base.
+          if [[ "$GITHUB_EVENT_NAME" = "pull_request" ]]
+          then
+            export GITHUB_REPOSITORY=$(jq -r .pull_request.head.repo.full_name "$GITHUB_EVENT_PATH")
+            export GITHUB_SHA=$(jq -r .pull_request.head.sha "$GITHUB_EVENT_PATH")
+          fi
           # CocoaPods: podspec
           sed -E -i '' \
               -e "s|^(\s*s\.source = ).*$|\1{ :git => \"https://github.com/${GITHUB_REPOSITORY}.git\", :commit => \"$GITHUB_SHA\" }|" \
@@ -213,6 +229,14 @@ jobs:
       - name: Hack dependencies
         if: contains(env.HACK_DEPENDENCIES, 'true')
         run: |
+          # When building pull requests GitHub uses an internal ref in the
+          # *base repo*, making it inaccessible to dumb tools. Update the
+          # variables to point to head, not the result of merge with base.
+          if [[ "$GITHUB_EVENT_NAME" = "pull_request" ]]
+          then
+            export GITHUB_REPOSITORY=$(jq -r .pull_request.head.repo.full_name "$GITHUB_EVENT_PATH")
+            export GITHUB_SHA=$(jq -r .pull_request.head.sha "$GITHUB_EVENT_PATH")
+          fi
           # Carthage
           find docs/examples -type f -name Cartfile.resolved -delete
           find docs/examples -type f -name Cartfile -print0 | xargs -0 \
