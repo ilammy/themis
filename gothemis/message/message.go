@@ -173,7 +173,9 @@ func messageProcess(private *keys.PrivateKey, peerPublic *keys.PublicKey, messag
 		}
 	}
 
-	return output, nil
+	// Themis Core for EC keys in sign mode actually returns slightly longer length on measurement than it returns after signing
+	// so this is important to get the buffer size right.
+	return output[:outputLength], nil
 }
 
 // Wrap encrypts the provided message.
