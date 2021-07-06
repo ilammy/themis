@@ -21,6 +21,7 @@ on:
       - master
       - stable
       - release/*
+      - wasm-update-emscripten
   schedule:
     - cron: '20 6 * * 1' # every Monday at 6:20 UTC
 
