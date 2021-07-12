@@ -44,6 +44,8 @@ class PrivateKey extends Uint8Array {
         array = utils.coerceToBytes(array)
         super(array)
         validateKeyBuffer(this, [keyKinds.EC_PRIVATE, keyKinds.RSA_PRIVATE])
+        // TODO: remove this shim once compatibility is restored
+        this.data = new Uint8Array(this)
     }
 }
 
@@ -52,6 +54,8 @@ class PublicKey extends Uint8Array {
         array = utils.coerceToBytes(array)
         super(array)
         validateKeyBuffer(this, [keyKinds.EC_PUBLIC, keyKinds.RSA_PUBLIC])
+        // TODO: remove this shim once compatibility is restored
+        this.data = new Uint8Array(this)
     }
 }
 
@@ -174,6 +178,8 @@ class SymmetricKey extends Uint8Array {
             }
         }
         super(array)
+        // TODO: remove this shim once compatibility is restored
+        this.data = new Uint8Array(this)
     }
 }
 
