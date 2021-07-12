@@ -168,9 +168,7 @@ _Code:_
       Starting with WasmThemis 0.14.0, we are focusing on supporting only ES6 modules for bundling and importing WasmThemis:
 
       ```javascript
-      import {
-        SecureCell, SecureMessage, SecureSession, SecureComparator,
-      } from 'wasm-themis'
+      import { SecureCell, SecureMessage, SecureSession, SecureComparator } from 'wasm-themis'
       ```
 
       Please follow the migration guide below to convert your projects:
