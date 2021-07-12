@@ -17,6 +17,6 @@
  * Themis Secure Cell.
  */
 
-export { SecureCellSeal } from "./secure_cell_seal.js";
-export { SecureCellTokenProtect } from "./secure_cell_token_protect.js";
-export { SecureCellContextImprint } from "./secure_cell_context_imprint.js";
+export { SecureCellSeal } from "./secure_cell_seal";
+export { SecureCellTokenProtect } from "./secure_cell_token_protect";
+export { SecureCellContextImprint } from "./secure_cell_context_imprint";

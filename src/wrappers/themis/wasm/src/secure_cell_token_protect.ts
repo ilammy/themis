@@ -17,15 +17,15 @@
  * Themis Secure Cell (Token Protect mode).
  */
 
-import themisContext from "./context.js";
-import { ThemisError, ThemisErrorCode } from "./themis_error.js";
+import themisContext from "./context";
+import { ThemisError, ThemisErrorCode } from "./themis_error";
 import {
   coerceToBytes,
   heapFree,
   heapGetArray,
   heapPutArray,
   heapAlloc,
-} from "./utils.js";
+} from "./utils";
 
 const cryptosystem_name = "SecureCellTokenProtect";
 

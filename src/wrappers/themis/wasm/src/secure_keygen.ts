@@ -17,15 +17,15 @@
  * Themis secure key generation.
  */
 
-import context from "./context.js";
-import { ThemisError, ThemisErrorCode } from "./themis_error.js";
+import context from "./context";
+import { ThemisError, ThemisErrorCode } from "./themis_error";
 import {
   coerceToBytes,
   heapFree,
   heapGetArray,
   heapPutArray,
   heapAlloc,
-} from "./utils.js";
+} from "./utils";
 
 const cryptosystem_name = "KeyPair";
 

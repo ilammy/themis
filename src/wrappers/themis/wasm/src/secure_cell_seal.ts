@@ -17,8 +17,8 @@
  * Themis Secure Cell (Seal mode).
  */
 
-import themisContext from "./context.js";
-import { ThemisError, ThemisErrorCode } from "./themis_error.js";
+import themisContext from "./context";
+import { ThemisError, ThemisErrorCode } from "./themis_error";
 import {
   coerceToBytes,
   heapFree,
@@ -26,7 +26,7 @@ import {
   heapPutArray,
   heapAlloc,
   passphraseBytes,
-} from "./utils.js";
+} from "./utils";
 
 const cryptosystem_name = "SecureCellSeal";
 

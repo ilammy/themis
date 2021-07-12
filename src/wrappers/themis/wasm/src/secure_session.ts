@@ -17,16 +17,16 @@
  * Themis Secure Session.
  */
 
-import { KeyPair, PublicKey, PrivateKey, SymmetricKey } from "./secure_keygen.js";
-import context from "./context.js";
-import { ThemisError, ThemisErrorCode } from "./themis_error.js";
+import { KeyPair, PublicKey, PrivateKey, SymmetricKey } from "./secure_keygen";
+import context from "./context";
+import { ThemisError, ThemisErrorCode } from "./themis_error";
 import {
   coerceToBytes,
   heapFree,
   heapGetArray,
   heapPutArray,
   heapAlloc,
-} from "./utils.js";
+} from "./utils";
 
 const cryptosystem_name = "SecureSession";
 
