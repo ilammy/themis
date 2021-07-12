@@ -28,18 +28,13 @@ Object.assign(module.exports
   , require('./themis_error.js')
 )
 
-let resolveInitialization
-let initializationPromise = new Promise(function(resolve) {
-    resolveInitialization = resolve
-})
-
-/**
- * Themis initialization promise.
- *
- * Resolved when Themis is loaded and ready to use.
- */
-module.exports.initialized = initializationPromise
-
-libthemis["onRuntimeInitialized"] = function() {
-    resolveInitialization()
+function initialize(wasmPath) {
+    return libthemis({
+        onRuntimeInitialized: function () {},
+        locateFile: wasmPath ? function () {
+            return wasmPath;
+        } : undefined,
+    })
 }
+
+module.exports.initialize = initialize
