@@ -4,5 +4,4 @@ node_modules/
 # Results of local "npm pack"
 *.tgz
 
-dist-es5/
 dist/
