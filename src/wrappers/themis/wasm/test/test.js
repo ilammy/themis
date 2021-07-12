@@ -13,7 +13,7 @@
 // limitations under the License.
 
 const themis = (process.env.ES5 == 'yes')
-             ? require('../dist/index.js')
+             ? require('../dist-es5/index.js')
              : require('../src/index.ts')
 const assert = require('assert')
 const { performance } = require('perf_hooks')

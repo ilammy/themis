@@ -2,23 +2,23 @@
   "name": "wasm-themis",
   "version": "0.14.0",
   "description": "Themis is a convenient cryptographic library for data protection.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "module": "dist-es6/index.js",
+  "main": "dist-es5/index.js",
+  "types": "dist-es5/index.d.ts",
+  "module": "dist/index.js",
   "files": [
+    "dist-es5/*.js",
+    "dist-es5/*.ts",
+    "dist-es5/libthemis.wasm",
     "dist/*.js",
     "dist/*.ts",
-    "dist/libthemis.wasm",
-    "dist-es6/*.js",
-    "dist-es6/*.ts",
-    "dist-es6/libthemis.wasm"
+    "dist/libthemis.wasm"
   ],
   "scripts": {
     "test": "npm run test-es5 && npm run test-es6",
     "test-es5": "npm run tsc-es5 && ES5=yes mocha test/test.js",
     "test-es6": "ts-mocha -p tsconfig.json test/test.js",
-    "tsc-es5": "tsc -t es5 -m commonjs --outDir dist && cp src/libthemis* src/.npmignore dist/",
-    "tsc-es6": "tsc -t es6 -m es6 --outDir dist-es6 && cp src/libthemis* src/.npmignore dist-es6/",
+    "tsc-es5": "tsc -t es5 -m commonjs --outDir dist-es5 && cp src/libthemis* src/.npmignore dist-es5/",
+    "tsc-es6": "tsc -t es6 -m es6 --outDir dist && cp src/libthemis* src/.npmignore dist/",
     "prepare": "npm run tsc-es5 && npm run tsc-es6"
   },
   "repository": {
