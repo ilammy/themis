@@ -6,7 +6,7 @@ Changes that are currently in development and have not been released yet.
 
 **Breaking changes and deprecations:**
 
-- Importing WasmThemis with `require()` is now deprecated and **will be removed** in the next release ([read more](##0.14.0-wasm-themis-require-deprecated)).
+- Importing WasmThemis with `require()` is now deprecated and **will be removed** in the next release ([read more](#0.14.0-wasm-themis-require-deprecated)).
 
 _Code:_
 
