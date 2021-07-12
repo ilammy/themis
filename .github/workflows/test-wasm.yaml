@@ -21,6 +21,7 @@ on:
       - master
       - stable
       - release/*
+      - typescript-bundle-old-wasmthemis
   schedule:
     - cron: '20 6 * * 1' # every Monday at 6:20 UTC
 
