@@ -17,6 +17,7 @@
  * WasmThemis module entry point.
  */
 
+const context = require('./context.js')
 const libthemis = require('./libthemis.js')
 
 Object.assign(module.exports
@@ -28,13 +29,16 @@ Object.assign(module.exports
   , require('./themis_error.js')
 )
 
-function initialize(wasmPath) {
-    return libthemis({
+async function initialize(wasmPath) {
+    let exports = await libthemis({
         onRuntimeInitialized: function () {},
         locateFile: wasmPath ? function () {
             return wasmPath;
         } : undefined,
     })
+    // Fill in WasmThemis "native" WebAssembly exports
+    Object.assign(context, exports)
+    return module.exports
 }
 
 module.exports.initialize = initialize

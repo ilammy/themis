@@ -17,7 +17,7 @@
  * Miscellaneous utilities.
  */
 
-const libthemis = require('./libthemis.js')
+const libthemis = require('./context.js')
 
 /**
  * Convert an object into a byte buffer.
@@ -42,7 +42,7 @@ function getTextEncoder() {
     if (typeof TextEncoder !== 'undefined') {
         return new TextEncoder()
     }
-    
+
     // we are using a browser which does not support TextEncoder or in a Node process which has TextEncoder
     // available through the util package.
     const NodeTextEncoder = require('util').TextEncoder

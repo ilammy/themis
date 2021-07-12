@@ -17,7 +17,7 @@
  * Themis Secure Message.
  */
 
-const libthemis = require('./libthemis.js')
+const libthemis = require('./context.js')
 const keygen = require('./secure_keygen.js')
 const errors = require('./themis_error.js')
 const utils = require('./utils.js')

@@ -17,7 +17,7 @@
  * Themis Secure Cell (Seal mode).
  */
 
-const libthemis = require('./libthemis.js')
+const libthemis = require('./context.js')
 const errors = require('./themis_error.js')
 const utils = require('./utils.js')
 
