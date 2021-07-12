@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const themis = require('../src/index.ts')
+const themis = (process.env.ES5 == 'yes')
+             ? require('../dist/index.js')
+             : require('../src/index.ts')
 const assert = require('assert')
 const { performance } = require('perf_hooks')
 
