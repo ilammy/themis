@@ -1,5 +1,5 @@
-import { ThemisErrorCode } from "./themis_error";
-import { KeyKind } from "./secure_keygen";
+import { ThemisErrorCode } from "./themis_error.js";
+import { KeyKind } from "./secure_keygen.js";
 
 interface LibThemisModule extends EmscriptenModule {
     writeArrayToMemory: typeof writeArrayToMemory;

@@ -17,16 +17,16 @@
  * Themis Secure Message.
  */
 
-import { KeyPair, PublicKey, PrivateKey } from "./secure_keygen";
-import context from "./context";
-import { ThemisError, ThemisErrorCode } from "./themis_error";
+import { KeyPair, PublicKey, PrivateKey } from "./secure_keygen.js";
+import context from "./context.js";
+import { ThemisError, ThemisErrorCode } from "./themis_error.js";
 import {
   coerceToBytes,
   heapFree,
   heapGetArray,
   heapPutArray,
   heapAlloc,
-} from "./utils";
+} from "./utils.js";
 
 const cryptosystem_name = "SecureMessage";
 

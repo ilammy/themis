@@ -17,7 +17,7 @@
  * Miscellaneous utilities.
  */
 
-import context from "./context";
+import context from "./context.js";
 
 /**
  * Convert an object into a byte buffer.
