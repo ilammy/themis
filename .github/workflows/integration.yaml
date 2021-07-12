@@ -25,6 +25,7 @@ on:
       - master
       - stable
       - release/*
+      - typescript-test-both-es5-and-es6
   schedule:
     - cron: '20 6 * * 1' # every Monday at 6:20 UTC
 
