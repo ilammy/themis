@@ -4,6 +4,10 @@
 
 Changes that are currently in development and have not been released yet.
 
+**Breaking changes and deprecations:**
+
+- Importing WasmThemis with `require()` is now deprecated and **will be removed** in the next release ([read more](##0.14.0-wasm-themis-require-deprecated)).
+
 _Code:_
 
 - **Core**
@@ -154,6 +158,74 @@ _Code:_
 
   - Updated Emscripten toolchain to the latest version ([#760](https://github.com/cossacklabs/themis/pull/760)).
   - Node.js v16 is now supported ([#801](https://github.com/cossacklabs/themis/pull/801)).
+
+  - **Deprecations**
+
+    - <a id="0.14.0-wasm-themis-require-deprecated">Imports with `require()` are deprecated and will not be supported in the next release</a> ([#FILL-ME-IN](https://github.com/cossacklabs/themis/pull/FILL-ME-IN)).
+
+      WasmThemis requires ES6-compatible runtime (such as a modern web brower, or Node.js, or Electron). Due to sheer diversity of runtimes, we are not able to provide first-class support of WasmThemis everywhere, using any combination of transpilers and bundlers available on the Internet.
+
+      Starting with WasmThemis 0.14.0, we are focusing on supporting only ES6 modules for bundling and importing WasmThemis.
+
+      <details>
+      <summary>Migration guide</summary>
+
+      - Use ES6 modules and ES6-style imports.
+
+        You should import WasmThemis functions like this:
+
+        ```javascript
+        import { SecureCell } from 'wasm-themis'
+        ```
+
+        instead of using ES5-style `require()` form:
+
+        ```javascript
+        const { SecureCell } = require('wasm-themis')
+        ```
+
+      - There is no default export for ES6 module.
+
+        If you were importing WasmThemis like this:
+
+        ```javascript
+        const themis = require('wasm-themis')
+        ```
+
+        the correct replacement is this:
+
+        ```javascript
+        import * as themis from 'wasm-themis'
+        ```
+
+        Default import **will not work**:
+
+        ```javascript
+        // This DOES NOT work as 'wasm-themis' has no default export:
+        import themis from 'wasm-themis'
+        ```
+
+      - Be aware of how Node.js treats `*.js` files.
+
+        By default, Node.js treats `*.js` files as CommonJS sources, which are *not* ES6 modules. You may need to use `*.mjs` extension, or add
+        ```json
+        {
+          "type": "module"
+        }
+        ```
+        to your `package.json`.
+
+      </details>
+
+      ⚠️ **`require()` will not be supported since WasmThemis 0.15.0.**
+
+      For WasmThemis 0.14.0, using `require()` to import WasmThemis is still supported. Starting with the next release – WasmThemis 0.15.0 – we will remove compatibility shims, stop testing imports with `require()`, and will only package ES6 modules.
+
+      This might be a **breaking change** for you, if your environment does not support ES6 modules, unless you use some sort of transpiler (e.g., Babel) to convert ES6-style imports into whatever is appropriate.
+
+      Please migrate to ES6 modules.
+
+      If you encounter any issue with using WasmThemis 0.14.0 as a ES6 module, please [report this bug to us](https://github.com/cossacklabs/themis/issues/new?template=bug_report.md).
 
 _Infrastructure:_
 
